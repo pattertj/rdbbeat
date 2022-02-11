@@ -1,5 +1,3 @@
-# coding=utf-8
-
 import datetime as dt
 
 import pytz
@@ -17,7 +15,7 @@ from .tzcrontab import TzAwareCrontab
 logger = get_logger("celery_sqlalchemy_scheduler.models")
 
 
-def cronexp(field):
+def cronexp(field) -> str:
     """Representation of cron expression."""
     return field and str(field).replace(" ", "") or "*"
 

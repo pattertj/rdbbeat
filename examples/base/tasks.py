@@ -158,16 +158,14 @@ celery.conf.update(config)
 
 
 @celery.task
-def add(x, y):
+def add(x: int, y: int) -> int:
     return x + y
 
 
 @celery.task
-def echo(data):
+def echo(data) -> None:
     print(data)
 
 
 if __name__ == "__main__":
     celery.start()
-    # import doctest
-    # doctest.testmod()

@@ -1,7 +1,11 @@
 # lint
-black
+black===20.8b0
 flake8 >= 3.8.0
 flynt
 isort >= 5
 yamllint
 pipenv
+
+# mypy
+mypy
+types-mock
