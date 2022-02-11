@@ -9,3 +9,5 @@ pipenv
 # mypy
 mypy
 types-mock
+types-pytz
+sqlalchemy_utils

@@ -1,11 +1,12 @@
-# coding=utf-8
-"""Timezone aware Cron schedule Implementation."""
-
 import datetime as dt
+from datetime import datetime
 from collections import namedtuple
+from typing import Any
 
 import pytz
 from celery import schedules
+from sqlalchemy_utils import TimezoneType
+
 
 schedstate = namedtuple("schedstate", ("is_due", "next"))
 
@@ -15,14 +16,14 @@ class TzAwareCrontab(schedules.crontab):
 
     def __init__(
         self,
-        minute="*",
-        hour="*",
-        day_of_week="*",
-        day_of_month="*",
-        month_of_year="*",
-        tz=pytz.utc,
-        app=None,
-    ):
+        minute: str="*",
+        hour: str="*",
+        day_of_week: str="*",
+        day_of_month: str="*",
+        month_of_year: str="*",
+        tz: TimezoneType=pytz.utc,
+        app: Any=None,
+    ) -> None:
         """Overwrite Crontab constructor to include a timezone argument."""
         self.tz = tz
 
@@ -39,10 +40,10 @@ class TzAwareCrontab(schedules.crontab):
             app=app,
         )
 
-    def nowfunc(self):
+    def nowfunc(self) -> datetime:
         return self.tz.normalize(pytz.utc.localize(dt.datetime.utcnow()))
 
-    def is_due(self, last_run_at):
+    def is_due(self, last_run_at: datetime) -> schedstate:
         """Calculate when the next run will take place.
 
         Return tuple of (is_due, next_time_to_check).
@@ -61,14 +62,14 @@ class TzAwareCrontab(schedules.crontab):
         return schedstate(due, rem)
 
     # Needed to support pickling
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"<crontab: {self._orig_minute} {self._orig_hour} "
             f"{self._orig_day_of_week} {self._orig_day_of_month} "
             f"{self._orig_month_of_year} (m/h/d/dM/MY), {self.tz}>"
         )
 
-    def __reduce__(self):
+    def __reduce__(self) -> Any:
         return (
             self.__class__,
             (
@@ -82,7 +83,7 @@ class TzAwareCrontab(schedules.crontab):
             None,
         )
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> Any:
         if isinstance(other, schedules.crontab):
             return (
                 other.month_of_year == self.month_of_year
