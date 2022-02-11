@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 Ready::
 
@@ -85,7 +84,6 @@ from celery import Celery, schedules
 from celery_sqlalchemy_scheduler.schedulers import DatabaseScheduler  # noqa
 
 # for and convenient to test and modify
-# 可以在 examples/base 目录下创建 .env 文件，修改对应的变量
 ECHO_EVERY_MINUTE = os.getenv("ECHO_EVERY_MINUTE", "0")
 ECHO_EVERY_HOUR = os.getenv("ECHO_EVERY_HOUR", "8")
 
@@ -140,14 +138,13 @@ beat_dburi = "sqlite:///schedule.db"
 timezone = "Asia/Shanghai"
 
 # prevent memory leaks
-# 默认每个worker跑完10个任务后，自我销毁程序重建来释放内存
 worker_max_tasks_per_child = 10
 
 celery = Celery("tasks", backend=backend, broker=broker_url)
 
 config = {
     "beat_schedule": beat_schedule,
-    # 'beat_scheduler': beat_scheduler,  # 命令行传参配置了，所以这里并不需要写死在代码里
+    # 'beat_scheduler': beat_scheduler
     "beat_max_loop_interval": beat_max_loop_interval,
     "beat_dburi": beat_dburi,
     "timezone": timezone,
@@ -163,7 +160,7 @@ def add(x: int, y: int) -> int:
 
 
 @celery.task
-def echo(data) -> None:
+def echo(data: str) -> None:
     print(data)
 
 
