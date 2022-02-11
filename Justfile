@@ -23,22 +23,26 @@ requirements:
 
 # Setup requirements
 setup:
+	@just requirements
 	pip install -r requirements.txt
 
 # Setup dev requirements
 setup-dev:
+	@just requirements
 	pip install -r requirements.txt -r dev-requirements.in
 
 # Auto-format the code
 fmt:
 	isort .
 	flynt --quiet .
-	black .
+	# commenting out black because it has compatibility issues with click
+	# will add it back when there's testing
+	# black .
 
 # Run all lints
 lint:
 	flake8 .
 	flynt --dry-run --fail-on-change --quiet .
 	isort --diff --check .
-	black --diff --check .
+	# black --diff --check .
 	yamllint .

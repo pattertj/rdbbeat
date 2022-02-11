@@ -1,5 +1,7 @@
 # lint
-black
+# commenting out black because it has compatibility issues with click
+# will add it back when there's testing
+# black
 flake8
 flynt
 isort
