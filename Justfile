@@ -19,7 +19,7 @@ install-pip-tools:
 # Create requirements.txt file
 requirements:
 	@just install-pip-tools
-	pip-compile
+	pipenv lock --requirements
 
 # Setup requirements
 setup:
