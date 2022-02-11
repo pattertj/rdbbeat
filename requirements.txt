@@ -14,7 +14,7 @@ click-didyoumean==0.0.3
 click-plugins==1.1.1
 click-repl==0.1.6
 click==7.1.2
-greenlet==1.0.0; python_version >= '3'
+greenlet==1.0.0; python_version < '3.8'
 importlib-metadata==4.0.0; python_version < '3.8'
 kombu==5.0.2
 mysql-connector==2.2.9
