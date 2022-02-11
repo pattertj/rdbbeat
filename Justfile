@@ -19,6 +19,8 @@ install-pip-tools:
 # Create requirements.txt file
 requirements:
 	@just install-pip-tools
+	# this is temporary
+	pip install pipenv
 	pipenv lock --requirements
 
 # Setup requirements
