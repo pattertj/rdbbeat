@@ -1,8 +1,10 @@
 # lint
-black===20.8b0
-flake8 >= 3.8.0
+# commenting out black because it has compatibility issues with click
+# will add it back when there's testing
+# black
+flake8
 flynt
-isort >= 5
+isort
 yamllint
 pipenv
 

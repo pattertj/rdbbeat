@@ -19,7 +19,9 @@ install-pip-tools:
 # Create requirements.txt file
 requirements:
 	@just install-pip-tools
-	pip-compile
+	# this is temporary
+	pip install pipenv
+	pipenv lock --requirements
 
 # Setup requirements
 setup:
@@ -35,12 +37,15 @@ setup-dev:
 fmt:
 	isort .
 	flynt --quiet .
-	black .
+	# commenting out black because it has compatibility issues with click
+	# will add it back when there's testing
+	# black .
 
 # Run all lints
 lint:
 	flake8 .
 	flynt --dry-run --fail-on-change --quiet .
 	isort --diff --check .
-	black --diff --check .
-	mypy .
+	# black --diff --check .
+  mypy .
+	yamllint .
