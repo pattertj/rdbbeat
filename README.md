@@ -1,7 +1,7 @@
 
 [![code](https://github.com/aruba-uxi/celery-sqlalchemy-scheduler/actions/workflows/lint-test-code.yaml/badge.svg)](https://github.com/aruba-uxi/celery-sqlalchemy-scheduler/actions/workflows/lint-test-code.yaml)
 
-[![Python Version](https://img.shields.io/badge/python-3.10-blue?logo=Python&logoColor=yellow)](https://docs.python.org/3.10/)
+[![Python Version](https://img.shields.io/badge/python-3.8-blue?logo=Python&logoColor=yellow)](https://docs.python.org/3.8/)
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Build: just](https://img.shields.io/badge/%F0%9F%A4%96%20build-just-black?labelColor=white)](https://just.systems/)
