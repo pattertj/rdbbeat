@@ -1,4 +1,5 @@
 import datetime as dt
+from typing import Any
 
 import pytz
 import sqlalchemy as sa
@@ -6,7 +7,7 @@ from celery import schedules
 from celery.utils.log import get_logger
 from sqlalchemy import func
 from sqlalchemy.event import listen
-from sqlalchemy.orm import foreign, relationship, remote
+from sqlalchemy.orm import Session, foreign, relationship, remote
 from sqlalchemy.sql import insert, select, update
 
 from .session import ModelBase
@@ -15,17 +16,17 @@ from .tzcrontab import TzAwareCrontab
 logger = get_logger("celery_sqlalchemy_scheduler.models")
 
 
-def cronexp(field) -> str:
+def cronexp(field: str) -> str:
     """Representation of cron expression."""
     return field and str(field).replace(" ", "") or "*"
 
 
 class ModelMixin(object):
     @classmethod
-    def create(cls, **kw):
+    def create(cls, **kw: Any) -> Any:
         return cls(**kw)
 
-    def update(self, **kw):
+    def update(self, **kw: Any) -> Any:
         for attr, value in kw.items():
             setattr(self, attr, value)
         return self
@@ -46,13 +47,13 @@ class IntervalSchedule(ModelBase, ModelMixin):
     every = sa.Column(sa.Integer, nullable=False)
     period = sa.Column(sa.String(24))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if self.every == 1:
             return f"every {self.period_singular}"
         return f"every {self.every} {self.period}"
 
     @property
-    def schedule(self):
+    def schedule(self) -> dt.timedelta:
         return schedules.schedule(
             dt.timedelta(**{self.period: self.every}),
             # nowfun=lambda: make_aware(now())
@@ -60,7 +61,7 @@ class IntervalSchedule(ModelBase, ModelMixin):
         )
 
     @classmethod
-    def from_schedule(cls, session, schedule, period=SECONDS):
+    def from_schedule(cls, session: Session, schedule: Any, period: str = SECONDS) -> Any:
         every = max(schedule.run_every.total_seconds(), 0)
         model = session.query(IntervalSchedule).filter_by(every=every, period=period).first()
         if not model:
@@ -70,7 +71,7 @@ class IntervalSchedule(ModelBase, ModelMixin):
         return model
 
     @property
-    def period_singular(self):
+    def period_singular(self) -> str:
         return self.period[:-1]
 
 
@@ -86,7 +87,7 @@ class CrontabSchedule(ModelBase, ModelMixin):
     month_of_year = sa.Column(sa.String(64), default="*")
     timezone = sa.Column(sa.String(64), default="UTC")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"{cronexp(self.minute)} {cronexp(self.hour)} "
             f"{cronexp(self.day_of_week)} {cronexp(self.day_of_month)} "
@@ -94,7 +95,7 @@ class CrontabSchedule(ModelBase, ModelMixin):
         )
 
     @property
-    def schedule(self):
+    def schedule(self) -> schedules.crontab:
         return TzAwareCrontab(
             minute=self.minute,
             hour=self.hour,
@@ -105,7 +106,7 @@ class CrontabSchedule(ModelBase, ModelMixin):
         )
 
     @classmethod
-    def from_schedule(cls, session, schedule):
+    def from_schedule(cls, session: Session, schedule: Any) -> Any:
         spec = {
             "minute": schedule._orig_minute,
             "hour": schedule._orig_hour,
@@ -134,11 +135,11 @@ class SolarSchedule(ModelBase, ModelMixin):
     longitude = sa.Column(sa.Float())
 
     @property
-    def schedule(self):
+    def schedule(self) -> schedules.solar:
         return schedules.solar(self.event, self.latitude, self.longitude, nowfun=dt.datetime.now)
 
     @classmethod
-    def from_schedule(cls, session, schedule):
+    def from_schedule(cls, session: Session, schedule: Any) -> Any:
         spec = {"event": schedule.event, "latitude": schedule.lat, "longitude": schedule.lon}
         model = session.query(SolarSchedule).filter_by(**spec).first()
         if not model:
@@ -147,7 +148,7 @@ class SolarSchedule(ModelBase, ModelMixin):
             session.commit()
         return model
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.event} ({self.latitude}, {self.longitude})"
 
 
@@ -160,7 +161,7 @@ class PeriodicTaskChanged(ModelBase, ModelMixin):
     last_update = sa.Column(sa.DateTime(timezone=True), nullable=False, default=dt.datetime.now)
 
     @classmethod
-    def changed(cls, mapper, connection, target):
+    def changed(cls, mapper: Any, connection: Any, target: Any) -> None:
         """
         :param mapper: the Mapper which is the target of this event
         :param connection: the Connection being used
@@ -170,7 +171,7 @@ class PeriodicTaskChanged(ModelBase, ModelMixin):
             cls.update_changed(mapper, connection, target)
 
     @classmethod
-    def update_changed(cls, mapper, connection, target):
+    def update_changed(cls, mapper: Any, connection: Any, target: Any) -> None:
         """
         :param mapper: the Mapper which is the target of this event
         :param connection: the Connection being used
@@ -189,7 +190,7 @@ class PeriodicTaskChanged(ModelBase, ModelMixin):
             )
 
     @classmethod
-    def last_change(cls, session):
+    def last_change(cls, session: Session) -> Any:
         periodic_tasks = session.query(PeriodicTaskChanged).get(1)
         if periodic_tasks:
             return periodic_tasks.last_update
@@ -249,7 +250,7 @@ class PeriodicTask(ModelBase, ModelMixin):
 
     no_changes = False
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         fmt = "{self.name}: {{no schedule}}"
         if self.interval:
             fmt = "{self.name}: {self.interval}"
@@ -260,15 +261,15 @@ class PeriodicTask(ModelBase, ModelMixin):
         return fmt
 
     @property
-    def task_name(self):
+    def task_name(self) -> str:
         return self.task
 
     @task_name.setter
-    def task_name(self, value):
+    def task_name(self, value: str) -> None:
         self.task = value
 
     @property
-    def schedule(self):
+    def schedule(self) -> schedules.schedule:
         if self.interval:
             return self.interval.schedule
         elif self.crontab:

@@ -4,9 +4,8 @@ from typing import Any, Dict
 from kombu.utils.compat import register_after_fork
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import NullPool
-
 
 ModelBase = declarative_base()
 
@@ -50,7 +49,7 @@ class SessionManager(object):
         else:
             return create_engine(dburi, poolclass=NullPool)
 
-    def create_session(self, dburi: str, short_lived_sessions: bool=False, **kwargs: Any) -> Any:
+    def create_session(self, dburi: str, short_lived_sessions: bool = False, **kwargs: Any) -> Any:
         engine = self.get_engine(dburi, **kwargs)
         if self.forked:
             if short_lived_sessions or dburi not in self._sessions:

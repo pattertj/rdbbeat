@@ -1,8 +1,7 @@
-# coding=utf-8
-
 import datetime as dt
 import logging
 from multiprocessing.util import Finalize
+from typing import Any, Dict, List, Set
 
 import sqlalchemy
 from celery import current_app, schedules
@@ -51,7 +50,9 @@ class ModelEntry(ScheduleEntry):
     )
     save_fields = ["last_run_at", "total_run_count", "no_changes"]
 
-    def __init__(self, model, Session, app=None, **kw):
+    def __init__(
+        self, model: Any, Session: sqlalchemy.orm.Session, app: Any = None, **kw: Any
+    ) -> None:
         """Initialize the model entry."""
         self.app = app or current_app._get_current_object()
         self.session = kw.get("session")
@@ -105,7 +106,7 @@ class ModelEntry(ScheduleEntry):
         #     expires = self.options['expires']
         #     self.options['expires'] = expires.replace(tzinfo=self.app.timezone)
 
-    def _disable(self, model):
+    def _disable(self, model: Any) -> None:
         model.no_changes = True
         self.model.enabled = self.enabled = model.enabled = False
         if self.session:
@@ -122,7 +123,7 @@ class ModelEntry(ScheduleEntry):
             #     session.add(obj)
             #     session.commit()
 
-    def is_due(self):
+    def is_due(self) -> bool:
         if not self.model.enabled:
             # 5 second delay for re-enable.
             return schedules.schedstate(False, 5.0)
@@ -149,7 +150,7 @@ class ModelEntry(ScheduleEntry):
 
         return self.schedule.is_due(self.last_run_at)
 
-    def _default_now(self):
+    def _default_now(self) -> Any:
         now = self.app.now()
         # The PyTZ datetime must be localised for the Django-Celery-Beat
         # scheduler to work. Keep in mind that timezone arithmatic
@@ -157,7 +158,7 @@ class ModelEntry(ScheduleEntry):
         # return now.tzinfo.localize(now.replace(tzinfo=None))
         return now.replace(tzinfo=self.app.timezone)
 
-    def __next__(self):
+    def __next__(self) -> Any:
         # should be use `self._default_now()` or `self.app.now()` ?
         self.model.last_run_at = self.app.now()
         self.model.total_run_count += 1
@@ -166,7 +167,7 @@ class ModelEntry(ScheduleEntry):
 
     next = __next__  # for 2to3
 
-    def save(self, fields=tuple()):
+    def save(self, fields: Any = tuple()) -> None:
         """
         :params fields: tuple, the additional fields to save
         """
@@ -185,7 +186,7 @@ class ModelEntry(ScheduleEntry):
             session.commit()
 
     @classmethod
-    def to_model_schedule(cls, session, schedule):
+    def to_model_schedule(cls, session: sqlalchemy.orm.Session, schedule: Any) -> Any:
         for schedule_type, model_type, model_field in cls.model_schedules:
             # change to schedule
             schedule = schedules.maybe_schedule(schedule)
@@ -196,7 +197,9 @@ class ModelEntry(ScheduleEntry):
         raise ValueError(f"Cannot convert schedule type {schedule!r} to model")
 
     @classmethod
-    def from_entry(cls, name, Session, app=None, **entry):
+    def from_entry(
+        cls, name: str, Session: sqlalchemy.orm.Session, app: Any = None, **entry: Any
+    ) -> Any:
         """
 
         **entry sample:
@@ -227,8 +230,15 @@ class ModelEntry(ScheduleEntry):
 
     @classmethod
     def _unpack_fields(
-        cls, session, schedule, args=None, kwargs=None, relative=None, options=None, **entry
-    ):
+        cls,
+        session: sqlalchemy.orm.Session,
+        schedule: Any,
+        args: Any = None,
+        kwargs: Dict = None,
+        relative: Any = None,
+        options: Any = None,
+        **entry: Dict,
+    ) -> Dict:
         """
 
         **entry sample:
@@ -251,14 +261,14 @@ class ModelEntry(ScheduleEntry):
     @classmethod
     def _unpack_options(
         cls,
-        queue=None,
-        exchange=None,
-        routing_key=None,
-        priority=None,
-        one_off=None,
-        expires=None,
-        **kwargs,
-    ):
+        queue: Any = None,
+        exchange: Any = None,
+        routing_key: Any = None,
+        priority: Any = None,
+        one_off: Any = None,
+        expires: Any = None,
+        **kwargs: Dict,
+    ) -> Dict:
         data = {
             "queue": queue,
             "exchange": exchange,
@@ -276,7 +286,7 @@ class ModelEntry(ScheduleEntry):
             data["expires"] = expires
         return data
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"<ModelEntry: {safe_str(self.name)} "
             f"{self.task}(*{safe_repr(self.args)}, "
@@ -295,14 +305,14 @@ class DatabaseScheduler(Scheduler):
     _initial_read = True
     _heap_invalidated = False
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize the database scheduler."""
         self.app = kwargs["app"]
         self.dburi = kwargs.get("dburi") or self.app.conf.get("beat_dburi") or DEFAULT_BEAT_DBURI
         self.engine, self.Session = session_manager.create_session(self.dburi)
         session_manager.prepare_models(self.engine)
 
-        self._dirty = set()
+        self._dirty: Set[Any] = set()
         Scheduler.__init__(self, *args, **kwargs)
         self._finalize = Finalize(self, self.sync, exitpriority=5)
         self.max_interval = (
@@ -311,13 +321,13 @@ class DatabaseScheduler(Scheduler):
             or DEFAULT_MAX_INTERVAL
         )
 
-    def setup_schedule(self):
+    def setup_schedule(self) -> None:
         """override"""
         logger.info("setup_schedule")
         self.install_default_entries(self.schedule)
         self.update_from_dict(self.app.conf.beat_schedule)
 
-    def all_as_schedule(self):
+    def all_as_schedule(self) -> Dict:
         # TODO:
         session = self.Session()
         with session_cleanup(session):
@@ -334,7 +344,7 @@ class DatabaseScheduler(Scheduler):
                     pass
             return s
 
-    def schedule_changed(self):
+    def schedule_changed(self) -> bool:
         session = self.Session()
         with session_cleanup(session):
             changes = session.query(self.Changes).get(1)
@@ -352,7 +362,7 @@ class DatabaseScheduler(Scheduler):
                 self._last_timestamp = ts
             return False
 
-    def reserve(self, entry):
+    def reserve(self, entry: Any) -> Any:
         """override
 
         It will be called in parent class.
@@ -363,7 +373,7 @@ class DatabaseScheduler(Scheduler):
         self._dirty.add(new_entry.name)
         return new_entry
 
-    def sync(self):
+    def sync(self) -> None:
         """override"""
         logger.info("Writing entries...")
         _tried = set()
@@ -386,7 +396,7 @@ class DatabaseScheduler(Scheduler):
             # retry later, only for the failed ones
             self._dirty |= _failed
 
-    def update_from_dict(self, mapping):
+    def update_from_dict(self, mapping: Any) -> None:
         s = {}
         for name, entry_fields in mapping.items():
             # {'task': 'celery.backend_cleanup',
@@ -404,8 +414,8 @@ class DatabaseScheduler(Scheduler):
         # update self.schedule
         self.schedule.update(s)
 
-    def install_default_entries(self, data):
-        entries = {}
+    def install_default_entries(self, data: Any) -> None:
+        entries: Dict[str, Any] = {}
         if self.app.conf.result_expires:
             entries.setdefault(
                 "celery.backend_cleanup",
@@ -417,14 +427,14 @@ class DatabaseScheduler(Scheduler):
             )
         self.update_from_dict(entries)
 
-    def schedules_equal(self, *args, **kwargs):
+    def schedules_equal(self, *args: Any, **kwargs: Dict) -> Any:
         if self._heap_invalidated:
             self._heap_invalidated = False
             return False
         return super(DatabaseScheduler, self).schedules_equal(*args, **kwargs)
 
     @property
-    def schedule(self):
+    def schedule(self) -> schedules.schedule:
         initial = update = False
         if self._initial_read:
             logger.debug("DatabaseScheduler: initial read")
@@ -440,7 +450,7 @@ class DatabaseScheduler(Scheduler):
             self._schedule = self.all_as_schedule()
             # the schedule changed, invalidate the heap in Scheduler.tick
             if not initial:
-                self._heap = []
+                self._heap: List[Any] = []
                 self._heap_invalidated = True
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug(
@@ -451,7 +461,7 @@ class DatabaseScheduler(Scheduler):
         return self._schedule
 
     @property
-    def info(self):
+    def info(self) -> str:
         """override"""
         # return infomation about Schedule
         return f"    . db -> {self.dburi}"
