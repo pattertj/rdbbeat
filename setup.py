@@ -11,7 +11,7 @@ from os import path
 try:
     from setuptools import find_packages, setup
 except ImportError:
-    from distutils.core import find_packages, setup
+    from distutils.core import find_packages, setup  # type: ignore
 # To use a consistent encoding
 
 basedir = path.abspath(path.dirname(__file__))

@@ -47,5 +47,5 @@ lint:
 	flynt --dry-run --fail-on-change --quiet .
 	isort --diff --check .
 	# black --diff --check .
-    mypy .
+	mypy .
 	yamllint .

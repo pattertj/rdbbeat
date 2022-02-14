@@ -39,7 +39,7 @@ class SessionManager(object):
     def _after_fork(self) -> None:
         self.forked = True
 
-    def get_engine(self, dburi: str, **kwargs: Any) -> Any:
+    def get_engine(self, dburi: str, **kwargs: Dict) -> Any:
         if self.forked:
             try:
                 return self._engines[dburi]
@@ -49,7 +49,7 @@ class SessionManager(object):
         else:
             return create_engine(dburi, poolclass=NullPool)
 
-    def create_session(self, dburi: str, short_lived_sessions: bool = False, **kwargs: Any) -> Any:
+    def create_session(self, dburi: str, short_lived_sessions: bool = False, **kwargs: Dict) -> Any:
         engine = self.get_engine(dburi, **kwargs)
         if self.forked:
             if short_lived_sessions or dburi not in self._sessions:

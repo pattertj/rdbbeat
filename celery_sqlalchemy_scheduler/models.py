@@ -269,7 +269,7 @@ class PeriodicTask(ModelBase, ModelMixin):
         self.task = value
 
     @property
-    def schedule(self) -> schedules.schedule:
+    def schedule(self) -> Any:
         if self.interval:
             return self.interval.schedule
         elif self.crontab:

@@ -192,7 +192,7 @@ class ModelEntry(ScheduleEntry):
             schedule = schedules.maybe_schedule(schedule)
             if isinstance(schedule, schedule_type):
                 # TODO:
-                model_schedule = model_type.from_schedule(session, schedule)
+                model_schedule = model_type.from_schedule(session, schedule)  # type: ignore
                 return model_schedule, model_field
         raise ValueError(f"Cannot convert schedule type {schedule!r} to model")
 
@@ -434,7 +434,7 @@ class DatabaseScheduler(Scheduler):
         return super(DatabaseScheduler, self).schedules_equal(*args, **kwargs)
 
     @property
-    def schedule(self) -> schedules.schedule:
+    def schedule(self) -> Any:
         initial = update = False
         if self._initial_read:
             logger.debug("DatabaseScheduler: initial read")
