@@ -158,7 +158,7 @@ class ModelEntry(ScheduleEntry):
         # return now.tzinfo.localize(now.replace(tzinfo=None))
         return now.replace(tzinfo=self.app.timezone)
 
-    def __next__(self) -> Any:
+    def __next__(self) -> ScheduleEntry:
         # should be use `self._default_now()` or `self.app.now()` ?
         self.model.last_run_at = self.app.now()
         self.model.total_run_count += 1
@@ -362,7 +362,7 @@ class DatabaseScheduler(Scheduler):
                 self._last_timestamp = ts
             return False
 
-    def reserve(self, entry: Any) -> Any:
+    def reserve(self, entry: Any) -> ScheduleEntry:
         """override
 
         It will be called in parent class.
@@ -434,7 +434,7 @@ class DatabaseScheduler(Scheduler):
         return super(DatabaseScheduler, self).schedules_equal(*args, **kwargs)
 
     @property
-    def schedule(self) -> Any:
+    def schedule(self) -> Scheduler:
         initial = update = False
         if self._initial_read:
             logger.debug("DatabaseScheduler: initial read")

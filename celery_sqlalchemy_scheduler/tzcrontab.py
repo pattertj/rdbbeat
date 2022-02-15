@@ -68,7 +68,7 @@ class TzAwareCrontab(schedules.crontab):
             f"{self._orig_month_of_year} (m/h/d/dM/MY), {self.tz}>"
         )
 
-    def __reduce__(self) -> Any:
+    def __reduce__(self) -> schedules.crontab:
         return (
             self.__class__,
             (
@@ -82,7 +82,7 @@ class TzAwareCrontab(schedules.crontab):
             None,
         )
 
-    def __eq__(self, other: Any) -> Any:
+    def __eq__(self, other: Any) -> bool:
         if isinstance(other, schedules.crontab):
             return (
                 other.month_of_year == self.month_of_year
@@ -92,4 +92,4 @@ class TzAwareCrontab(schedules.crontab):
                 and other.minute == self.minute
                 and other.tz == self.tz
             )
-        return NotImplemented
+        raise NotImplementedError

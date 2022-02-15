@@ -1,5 +1,5 @@
 import datetime as dt
-from typing import Any
+from typing import Any, Dict
 
 import pytz
 import sqlalchemy as sa
@@ -23,10 +23,10 @@ def cronexp(field: str) -> str:
 
 class ModelMixin:
     @classmethod
-    def create(cls, **kw: Any) -> Any:
+    def create(cls, **kw: Dict) -> Any:
         return cls(**kw)
 
-    def update(self, **kw: Any) -> Any:
+    def update(self, **kw: Dict) -> object:
         for attr, value in kw.items():
             setattr(self, attr, value)
         return self
@@ -53,7 +53,7 @@ class IntervalSchedule(ModelBase, ModelMixin):
         return f"every {self.every} {self.period}"
 
     @property
-    def schedule(self) -> dt.timedelta:
+    def schedule(self) -> schedules.schedule:
         return schedules.schedule(
             dt.timedelta(**{self.period: self.every}),
             # nowfun=lambda: make_aware(now())
