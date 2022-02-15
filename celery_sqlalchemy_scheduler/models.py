@@ -61,7 +61,9 @@ class IntervalSchedule(ModelBase, ModelMixin):
         )
 
     @classmethod
-    def from_schedule(cls, session: Session, schedule: Any, period: str = SECONDS) -> Any:
+    def from_schedule(
+        cls, session: Session, schedule: schedules.schedule, period: str = SECONDS
+    ) -> Any:
         every = max(schedule.run_every.total_seconds(), 0)
         model = session.query(IntervalSchedule).filter_by(every=every, period=period).first()
         if not model:
@@ -106,7 +108,7 @@ class CrontabSchedule(ModelBase, ModelMixin):
         )
 
     @classmethod
-    def from_schedule(cls, session: Session, schedule: Any) -> Any:
+    def from_schedule(cls, session: Session, schedule: schedules.crontab) -> Any:
         spec = {
             "minute": schedule._orig_minute,
             "hour": schedule._orig_hour,
@@ -139,7 +141,7 @@ class SolarSchedule(ModelBase, ModelMixin):
         return schedules.solar(self.event, self.latitude, self.longitude, nowfun=dt.datetime.now)
 
     @classmethod
-    def from_schedule(cls, session: Session, schedule: Any) -> Any:
+    def from_schedule(cls, session: Session, schedule: schedules.solar) -> Any:
         spec = {"event": schedule.event, "latitude": schedule.lat, "longitude": schedule.lon}
         model = session.query(SolarSchedule).filter_by(**spec).first()
         if not model:
