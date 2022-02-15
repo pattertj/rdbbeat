@@ -26,7 +26,7 @@ class ModelMixin:
     def create(cls, **kw: Dict) -> Any:
         return cls(**kw)
 
-    def update(self, **kw: Dict) -> object:
+    def update(self, **kw: Dict) -> "ModelMixin":
         for attr, value in kw.items():
             setattr(self, attr, value)
         return self
@@ -63,7 +63,7 @@ class IntervalSchedule(ModelBase, ModelMixin):
     @classmethod
     def from_schedule(
         cls, session: Session, schedule: schedules.schedule, period: str = SECONDS
-    ) -> Any:
+    ) -> "IntervalSchedule":
         every = max(schedule.run_every.total_seconds(), 0)
         model = session.query(IntervalSchedule).filter_by(every=every, period=period).first()
         if not model:
@@ -97,7 +97,7 @@ class CrontabSchedule(ModelBase, ModelMixin):
         )
 
     @property
-    def schedule(self) -> schedules.crontab:
+    def schedule(self) -> TzAwareCrontab:
         return TzAwareCrontab(
             minute=self.minute,
             hour=self.hour,
@@ -108,7 +108,7 @@ class CrontabSchedule(ModelBase, ModelMixin):
         )
 
     @classmethod
-    def from_schedule(cls, session: Session, schedule: schedules.crontab) -> Any:
+    def from_schedule(cls, session: Session, schedule: schedules.crontab) -> "CrontabSchedule":
         spec = {
             "minute": schedule._orig_minute,
             "hour": schedule._orig_hour,
@@ -141,7 +141,7 @@ class SolarSchedule(ModelBase, ModelMixin):
         return schedules.solar(self.event, self.latitude, self.longitude, nowfun=dt.datetime.now)
 
     @classmethod
-    def from_schedule(cls, session: Session, schedule: schedules.solar) -> Any:
+    def from_schedule(cls, session: Session, schedule: schedules.solar) -> "SolarSchedule":
         spec = {"event": schedule.event, "latitude": schedule.lat, "longitude": schedule.lon}
         model = session.query(SolarSchedule).filter_by(**spec).first()
         if not model:
