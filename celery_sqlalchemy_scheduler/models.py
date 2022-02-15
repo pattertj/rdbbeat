@@ -21,7 +21,7 @@ def cronexp(field: str) -> str:
     return field and str(field).replace(" ", "") or "*"
 
 
-class ModelMixin(object):
+class ModelMixin:
     @classmethod
     def create(cls, **kw: Any) -> Any:
         return cls(**kw)
