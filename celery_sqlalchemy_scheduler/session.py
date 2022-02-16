@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from typing import Dict, Tuple
+from typing import Any, Dict, Tuple
 
 from kombu.utils.compat import register_after_fork
 from sqlalchemy import create_engine
@@ -66,7 +66,7 @@ class SessionManager:
             ModelBase.metadata.create_all(engine)
             self.prepared = True
 
-    def session_factory(self, dburi: str, **kwargs: Dict) -> Session:
-        engine, session = self.create_session(dburi=dburi, short_lived_sessions=False, **kwargs)
+    def session_factory(self, dburi: str, **kwargs: Any) -> Session:
+        engine, session = self.create_session(dburi, **kwargs)
         self.prepare_models(engine)
         return session()
