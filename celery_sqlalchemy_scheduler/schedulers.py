@@ -312,7 +312,7 @@ class DatabaseScheduler(Scheduler):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize the database scheduler."""
-        self.app = kwargs['app']
+        self.app = kwargs["app"]
         self.dburi = kwargs.get("dburi") or self.app.conf.get("beat_dburi") or DEFAULT_BEAT_DBURI
         self.engine, self.Session = session_manager.create_session(self.dburi)
         session_manager.prepare_models(self.engine)
