@@ -55,11 +55,12 @@ class ModelEntry(ScheduleEntry):
         model: schedules.schedule,
         Session: sqlalchemy.orm.Session,
         app: Celery = None,
-        **kw: Any,
+        session: sqlalchemy.orm.Session = None,
+        **kw: Dict,
     ) -> None:
         """Initialize the model entry."""
         self.app = app or current_app._get_current_object()
-        self.session = kw.get("session")
+        self.session = session
         self.Session = Session
 
         self.model = model
@@ -310,10 +311,12 @@ class DatabaseScheduler(Scheduler):
     _initial_read = True
     _heap_invalidated = False
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, app: Celery, **kwargs: Dict) -> None:
         """Initialize the database scheduler."""
-        self.app = kwargs["app"]
-        self.dburi = kwargs.get("dburi") or self.app.conf.get("beat_dburi") or DEFAULT_BEAT_DBURI
+        self.app = app
+        self.dburi = str(
+            kwargs.get("dburi") or self.app.conf.get("beat_dburi") or DEFAULT_BEAT_DBURI
+        )
         self.engine, self.Session = session_manager.create_session(self.dburi)
         session_manager.prepare_models(self.engine)
 
@@ -367,7 +370,7 @@ class DatabaseScheduler(Scheduler):
                 self._last_timestamp = ts
             return False
 
-    def reserve(self, entry: Any) -> ScheduleEntry:
+    def reserve(self, entry: ScheduleEntry) -> ScheduleEntry:
         """override
 
         It will be called in parent class.
