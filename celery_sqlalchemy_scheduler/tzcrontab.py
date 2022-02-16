@@ -1,10 +1,9 @@
 import datetime as dt
 from collections import namedtuple
 from datetime import datetime
-from typing import Any
 
 import pytz
-from celery import schedules
+from celery import Celery, schedules
 from sqlalchemy_utils import TimezoneType
 
 schedstate = namedtuple("schedstate", ("is_due", "next"))
@@ -21,7 +20,7 @@ class TzAwareCrontab(schedules.crontab):
         day_of_month: str = "*",
         month_of_year: str = "*",
         tz: TimezoneType = pytz.utc,
-        app: Any = None,
+        app: Celery = None,
     ) -> None:
         """Overwrite Crontab constructor to include a timezone argument."""
         self.tz = tz
@@ -82,7 +81,7 @@ class TzAwareCrontab(schedules.crontab):
             None,
         )
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: schedules.crontab) -> bool:
         if isinstance(other, schedules.crontab):
             return (
                 other.month_of_year == self.month_of_year

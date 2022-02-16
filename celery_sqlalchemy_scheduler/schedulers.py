@@ -1,10 +1,10 @@
 import datetime as dt
 import logging
 from multiprocessing.util import Finalize
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Set, Tuple
 
 import sqlalchemy
-from celery import current_app, schedules
+from celery import Celery, current_app, schedules
 from celery.beat import ScheduleEntry, Scheduler
 from celery.utils.log import get_logger
 from celery.utils.time import maybe_make_aware
@@ -51,7 +51,11 @@ class ModelEntry(ScheduleEntry):
     save_fields = ["last_run_at", "total_run_count", "no_changes"]
 
     def __init__(
-        self, model: Any, Session: sqlalchemy.orm.Session, app: Any = None, **kw: Any
+        self,
+        model: schedules.schedule,
+        Session: sqlalchemy.orm.Session,
+        app: Celery = None,
+        **kw: Any,
     ) -> None:
         """Initialize the model entry."""
         self.app = app or current_app._get_current_object()
@@ -106,7 +110,7 @@ class ModelEntry(ScheduleEntry):
         #     expires = self.options['expires']
         #     self.options['expires'] = expires.replace(tzinfo=self.app.timezone)
 
-    def _disable(self, model: Any) -> None:
+    def _disable(self, model: schedules.schedule) -> None:
         model.no_changes = True
         self.model.enabled = self.enabled = model.enabled = False
         if self.session:
@@ -150,7 +154,7 @@ class ModelEntry(ScheduleEntry):
 
         return self.schedule.is_due(self.last_run_at)
 
-    def _default_now(self) -> Any:
+    def _default_now(self) -> dt.datetime:
         now = self.app.now()
         # The PyTZ datetime must be localised for the Django-Celery-Beat
         # scheduler to work. Keep in mind that timezone arithmatic
@@ -167,7 +171,7 @@ class ModelEntry(ScheduleEntry):
 
     next = __next__  # for 2to3
 
-    def save(self, fields: Any = tuple()) -> None:
+    def save(self, fields: Tuple = tuple()) -> None:
         """
         :params fields: tuple, the additional fields to save
         """
@@ -186,7 +190,9 @@ class ModelEntry(ScheduleEntry):
             session.commit()
 
     @classmethod
-    def to_model_schedule(cls, session: sqlalchemy.orm.Session, schedule: Any) -> Any:
+    def to_model_schedule(
+        cls, session: sqlalchemy.orm.Session, schedule: schedules.schedule
+    ) -> Tuple[IntervalSchedule, str]:
         for schedule_type, model_type, model_field in cls.model_schedules:
             # change to schedule
             schedule = schedules.maybe_schedule(schedule)
@@ -198,8 +204,8 @@ class ModelEntry(ScheduleEntry):
 
     @classmethod
     def from_entry(
-        cls, name: str, Session: sqlalchemy.orm.Session, app: Any = None, **entry: Any
-    ) -> Any:
+        cls, name: str, Session: sqlalchemy.orm.Session, app: Celery = None, **entry: Dict
+    ) -> "PeriodicTask":
         """
 
         **entry sample:
@@ -232,11 +238,10 @@ class ModelEntry(ScheduleEntry):
     def _unpack_fields(
         cls,
         session: sqlalchemy.orm.Session,
-        schedule: Any,
+        schedule: schedules.schedule,
         args: Any = None,
         kwargs: Dict = None,
-        relative: Any = None,
-        options: Any = None,
+        options: Dict = None,
         **entry: Dict,
     ) -> Dict:
         """
@@ -261,12 +266,12 @@ class ModelEntry(ScheduleEntry):
     @classmethod
     def _unpack_options(
         cls,
-        queue: Any = None,
-        exchange: Any = None,
-        routing_key: Any = None,
-        priority: Any = None,
-        one_off: Any = None,
-        expires: Any = None,
+        queue: str = None,
+        exchange: str = None,
+        routing_key: str = None,
+        priority: int = None,
+        one_off: bool = None,
+        expires: Any = None,  # anti-pattern, 281 changes the type
         **kwargs: Dict,
     ) -> Dict:
         data = {
@@ -396,7 +401,7 @@ class DatabaseScheduler(Scheduler):
             # retry later, only for the failed ones
             self._dirty |= _failed
 
-    def update_from_dict(self, mapping: Any) -> None:
+    def update_from_dict(self, mapping: Dict) -> None:
         s = {}
         for name, entry_fields in mapping.items():
             # {'task': 'celery.backend_cleanup',
@@ -414,8 +419,8 @@ class DatabaseScheduler(Scheduler):
         # update self.schedule
         self.schedule.update(s)
 
-    def install_default_entries(self, data: Any) -> None:
-        entries: Dict[str, Any] = {}
+    def install_default_entries(self, data: Dict) -> None:
+        entries: Dict = {}
         if self.app.conf.result_expires:
             entries.setdefault(
                 "celery.backend_cleanup",
@@ -427,7 +432,7 @@ class DatabaseScheduler(Scheduler):
             )
         self.update_from_dict(entries)
 
-    def schedules_equal(self, *args: Any, **kwargs: Dict) -> Any:
+    def schedules_equal(self, *args: Any, **kwargs: Dict) -> bool:
         if self._heap_invalidated:
             self._heap_invalidated = False
             return False

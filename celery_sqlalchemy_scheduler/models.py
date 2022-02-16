@@ -1,13 +1,14 @@
 import datetime as dt
-from typing import Any, Dict
+from typing import Dict, Union
 
 import pytz
 import sqlalchemy as sa
 from celery import schedules
 from celery.utils.log import get_logger
 from sqlalchemy import func
+from sqlalchemy.engine import Engine
 from sqlalchemy.event import listen
-from sqlalchemy.orm import Session, foreign, relationship, remote
+from sqlalchemy.orm import Session, class_mapper, foreign, relationship, remote
 from sqlalchemy.sql import insert, select, update
 
 from .session import ModelBase
@@ -23,7 +24,7 @@ def cronexp(field: str) -> str:
 
 class ModelMixin:
     @classmethod
-    def create(cls, **kw: Dict) -> Any:
+    def create(cls, **kw: Dict) -> "ModelMixin":
         return cls(**kw)
 
     def update(self, **kw: Dict) -> "ModelMixin":
@@ -163,7 +164,9 @@ class PeriodicTaskChanged(ModelBase, ModelMixin):
     last_update = sa.Column(sa.DateTime(timezone=True), nullable=False, default=dt.datetime.now)
 
     @classmethod
-    def changed(cls, mapper: Any, connection: Any, target: Any) -> None:
+    def changed(
+        cls, mapper: class_mapper, connection: Engine.connect, target: "PeriodicTask"
+    ) -> None:
         """
         :param mapper: the Mapper which is the target of this event
         :param connection: the Connection being used
@@ -173,7 +176,9 @@ class PeriodicTaskChanged(ModelBase, ModelMixin):
             cls.update_changed(mapper, connection, target)
 
     @classmethod
-    def update_changed(cls, mapper: Any, connection: Any, target: Any) -> None:
+    def update_changed(
+        cls, mapper: class_mapper, connection: Engine.connect, target: "PeriodicTask"
+    ) -> None:
         """
         :param mapper: the Mapper which is the target of this event
         :param connection: the Connection being used
@@ -192,10 +197,11 @@ class PeriodicTaskChanged(ModelBase, ModelMixin):
             )
 
     @classmethod
-    def last_change(cls, session: Session) -> Any:
+    def last_change(cls, session: Session) -> Union[dt.datetime, None]:
         periodic_tasks = session.query(PeriodicTaskChanged).get(1)
         if periodic_tasks:
             return periodic_tasks.last_update
+        return None
 
 
 class PeriodicTask(ModelBase, ModelMixin):
@@ -271,7 +277,7 @@ class PeriodicTask(ModelBase, ModelMixin):
         self.task = value
 
     @property
-    def schedule(self) -> Any:
+    def schedule(self) -> schedules.schedule:
         if self.interval:
             return self.interval.schedule
         elif self.crontab:

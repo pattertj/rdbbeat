@@ -1,8 +1,9 @@
 from contextlib import contextmanager
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 from kombu.utils.compat import register_after_fork
 from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import NullPool
@@ -11,7 +12,7 @@ ModelBase = declarative_base()
 
 
 @contextmanager
-def session_cleanup(session: Session) -> Any:
+def session_cleanup(session: Session) -> Session:
     try:
         yield
     except Exception:
@@ -39,7 +40,7 @@ class SessionManager:
     def _after_fork(self) -> None:
         self.forked = True
 
-    def get_engine(self, dburi: str, **kwargs: Dict) -> Any:
+    def get_engine(self, dburi: str, **kwargs: Dict) -> Engine:
         if self.forked:
             try:
                 return self._engines[dburi]
@@ -49,7 +50,9 @@ class SessionManager:
         else:
             return create_engine(dburi, poolclass=NullPool)
 
-    def create_session(self, dburi: str, short_lived_sessions: bool = False, **kwargs: Dict) -> Any:
+    def create_session(
+        self, dburi: str, short_lived_sessions: bool = False, **kwargs: Dict
+    ) -> Tuple[Engine, Session]:
         engine = self.get_engine(dburi, **kwargs)
         if self.forked:
             if short_lived_sessions or dburi not in self._sessions:
@@ -58,7 +61,7 @@ class SessionManager:
         else:
             return engine, sessionmaker(bind=engine)
 
-    def prepare_models(self, engine: Any) -> None:
+    def prepare_models(self, engine: Engine) -> None:
         if not self.prepared:
             ModelBase.metadata.create_all(engine)
             self.prepared = True
