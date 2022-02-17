@@ -38,7 +38,7 @@ fmt:
 	isort .
 	flynt --quiet .
 	# commenting out black because it has compatibility issues with click
-	# will add it back when there's testing
+	# will add it back when there is testing
 	# black .
 
 # Run all lints
@@ -47,4 +47,5 @@ lint:
 	flynt --dry-run --fail-on-change --quiet .
 	isort --diff --check .
 	# black --diff --check .
+	mypy .
 	yamllint .

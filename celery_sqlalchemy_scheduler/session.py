@@ -1,19 +1,18 @@
-# coding=utf-8
-"""SQLAlchemy session."""
-
 from contextlib import contextmanager
+from typing import Any, Dict, Tuple
 
 from kombu.utils.compat import register_after_fork
 from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import NullPool
 
 ModelBase = declarative_base()
 
 
 @contextmanager
-def session_cleanup(session):
+def session_cleanup(session: Session) -> Session:
     try:
         yield
     except Exception:
@@ -23,25 +22,25 @@ def session_cleanup(session):
         session.close()
 
 
-def _after_fork_cleanup_session(session):
+def _after_fork_cleanup_session(session: Session) -> None:
     session._after_fork()
 
 
-class SessionManager(object):
+class SessionManager:
     """Manage SQLAlchemy sessions."""
 
-    def __init__(self):
-        self._engines = {}
-        self._sessions = {}
-        self.forked = False
-        self.prepared = False
+    def __init__(self) -> None:
+        self._engines: Dict = {}
+        self._sessions: Dict = {}
+        self.forked: bool = False
+        self.prepared: bool = False
         if register_after_fork is not None:
             register_after_fork(self, _after_fork_cleanup_session)
 
-    def _after_fork(self):
+    def _after_fork(self) -> None:
         self.forked = True
 
-    def get_engine(self, dburi, **kwargs):
+    def get_engine(self, dburi: str, **kwargs: Dict) -> Engine:
         if self.forked:
             try:
                 return self._engines[dburi]
@@ -51,7 +50,9 @@ class SessionManager(object):
         else:
             return create_engine(dburi, poolclass=NullPool)
 
-    def create_session(self, dburi, short_lived_sessions=False, **kwargs):
+    def create_session(
+        self, dburi: str, short_lived_sessions: bool = False, **kwargs: Dict
+    ) -> Tuple[Engine, Session]:
         engine = self.get_engine(dburi, **kwargs)
         if self.forked:
             if short_lived_sessions or dburi not in self._sessions:
@@ -60,12 +61,12 @@ class SessionManager(object):
         else:
             return engine, sessionmaker(bind=engine)
 
-    def prepare_models(self, engine):
+    def prepare_models(self, engine: Engine) -> None:
         if not self.prepared:
             ModelBase.metadata.create_all(engine)
             self.prepared = True
 
-    def session_factory(self, dburi, **kwargs):
+    def session_factory(self, dburi: str, **kwargs: Any) -> Session:
         engine, session = self.create_session(dburi, **kwargs)
         self.prepare_models(engine)
         return session()
