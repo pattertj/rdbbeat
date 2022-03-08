@@ -11,14 +11,15 @@ from celery.utils.time import maybe_make_aware
 from kombu.utils.encoding import safe_repr, safe_str
 from kombu.utils.json import dumps, loads
 
-from .models import (
+from celery_sqlalchemy_scheduler.db.models import (
     CrontabSchedule,
     IntervalSchedule,
     PeriodicTask,
     PeriodicTaskChanged,
     SolarSchedule,
 )
-from .session import SessionManager, session_cleanup
+
+from celery_sqlalchemy_scheduler.session import SessionManager, session_cleanup
 
 # This scheduler must wake up more frequently than the
 # regular of 5 minutes because it needs to take external
