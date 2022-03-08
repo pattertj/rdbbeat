@@ -18,7 +18,6 @@ from celery_sqlalchemy_scheduler.db.models import (
     PeriodicTaskChanged,
     SolarSchedule,
 )
-
 from celery_sqlalchemy_scheduler.session import SessionManager, session_cleanup
 
 # This scheduler must wake up more frequently than the
