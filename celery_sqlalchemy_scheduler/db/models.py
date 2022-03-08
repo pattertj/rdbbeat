@@ -1,5 +1,5 @@
 import datetime as dt
-from typing import Dict, Union
+from typing import Any, Dict, Union
 
 import pytz
 import sqlalchemy as sa
@@ -16,7 +16,7 @@ from celery_sqlalchemy_scheduler.tzcrontab import TzAwareCrontab
 
 logger = get_logger("celery_sqlalchemy_scheduler.db.models")
 
-Base = declarative_base(metadata=MetaData(schema="scheduler"))
+Base: Any = declarative_base(metadata=MetaData(schema="scheduler"))
 
 
 def cronexp(field: str) -> str:
