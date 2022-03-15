@@ -1,10 +1,10 @@
 import datetime as dt
+import logging
 from typing import Any, Dict, Union
 
 import pytz
 import sqlalchemy as sa
 from celery import schedules
-from celery.utils.log import get_logger
 from sqlalchemy import MetaData, func
 from sqlalchemy.engine import Engine
 from sqlalchemy.event import listen
@@ -14,7 +14,7 @@ from sqlalchemy.sql import insert, select, update
 
 from celery_sqlalchemy_scheduler.tzcrontab import TzAwareCrontab
 
-logger = get_logger("celery_sqlalchemy_scheduler.db.models")
+logger = logging.getLogger(__name__)
 
 Base: Any = declarative_base(metadata=MetaData(schema="scheduler"))
 
@@ -45,8 +45,9 @@ class IntervalSchedule(Base, ModelMixin):
     MICROSECONDS = "microseconds"
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
-
+    # Number of interval periods to wait before running the task again
     every = sa.Column(sa.Integer, nullable=False)
+    # The type of period between task runs (Example: days)
     period = sa.Column(sa.String(24))
 
     def __repr__(self) -> str:

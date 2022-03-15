@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Set, Tuple
 import sqlalchemy
 from celery import Celery, current_app, schedules
 from celery.beat import ScheduleEntry, Scheduler
-from celery.utils.log import get_logger
 from celery.utils.time import maybe_make_aware
 from kombu.utils.encoding import safe_repr, safe_str
 from kombu.utils.json import dumps, loads
@@ -36,7 +35,7 @@ session_manager = SessionManager()
 # session = session_manager()
 
 
-logger = get_logger("celery_sqlalchemy_scheduler.schedulers")
+logger = logging.getLogger(__name__)
 
 
 class ModelEntry(ScheduleEntry):
