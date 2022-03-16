@@ -1,20 +1,22 @@
 import datetime as dt
-from typing import Dict, Union
+import logging
+from typing import Any, Dict, Union
 
 import pytz
 import sqlalchemy as sa
 from celery import schedules
-from celery.utils.log import get_logger
-from sqlalchemy import func
+from sqlalchemy import MetaData, func
 from sqlalchemy.engine import Engine
 from sqlalchemy.event import listen
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, class_mapper, foreign, relationship, remote
 from sqlalchemy.sql import insert, select, update
 
-from .session import ModelBase
-from .tzcrontab import TzAwareCrontab
+from celery_sqlalchemy_scheduler.tzcrontab import TzAwareCrontab
 
-logger = get_logger("celery_sqlalchemy_scheduler.models")
+logger = logging.getLogger(__name__)
+
+Base: Any = declarative_base(metadata=MetaData(schema="scheduler"))
 
 
 def cronexp(field: str) -> str:
@@ -33,9 +35,8 @@ class ModelMixin:
         return self
 
 
-class IntervalSchedule(ModelBase, ModelMixin):
+class IntervalSchedule(Base, ModelMixin):
     __tablename__ = "celery_interval_schedule"
-    __table_args__ = {"sqlite_autoincrement": True}
 
     DAYS = "days"
     HOURS = "hours"
@@ -44,8 +45,9 @@ class IntervalSchedule(ModelBase, ModelMixin):
     MICROSECONDS = "microseconds"
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
-
+    # Number of interval periods to wait before running the task again
     every = sa.Column(sa.Integer, nullable=False)
+    # The type of period between task runs (Example: days)
     period = sa.Column(sa.String(24))
 
     def __repr__(self) -> str:
@@ -78,9 +80,8 @@ class IntervalSchedule(ModelBase, ModelMixin):
         return self.period[:-1]
 
 
-class CrontabSchedule(ModelBase, ModelMixin):
+class CrontabSchedule(Base, ModelMixin):
     __tablename__ = "celery_crontab_schedule"
-    __table_args__ = {"sqlite_autoincrement": True}
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     minute = sa.Column(sa.String(60 * 4), default="*")
@@ -127,12 +128,10 @@ class CrontabSchedule(ModelBase, ModelMixin):
         return model
 
 
-class SolarSchedule(ModelBase, ModelMixin):
+class SolarSchedule(Base, ModelMixin):
     __tablename__ = "celery_solar_schedule"
-    __table_args__ = {"sqlite_autoincrement": True}
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
-
     event = sa.Column(sa.String(24))
     latitude = sa.Column(sa.Float())
     longitude = sa.Column(sa.Float())
@@ -155,7 +154,7 @@ class SolarSchedule(ModelBase, ModelMixin):
         return f"{self.event} ({self.latitude}, {self.longitude})"
 
 
-class PeriodicTaskChanged(ModelBase, ModelMixin):
+class PeriodicTaskChanged(Base, ModelMixin):
     """Helper table for tracking updates to periodic tasks."""
 
     __tablename__ = "celery_periodic_task_changed"
@@ -204,10 +203,8 @@ class PeriodicTaskChanged(ModelBase, ModelMixin):
         return None
 
 
-class PeriodicTask(ModelBase, ModelMixin):
-
+class PeriodicTask(Base, ModelMixin):
     __tablename__ = "celery_periodic_task"
-    __table_args__ = {"sqlite_autoincrement": True}
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     # name

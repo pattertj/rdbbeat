@@ -6,19 +6,18 @@ from typing import Any, Dict, List, Set, Tuple
 import sqlalchemy
 from celery import Celery, current_app, schedules
 from celery.beat import ScheduleEntry, Scheduler
-from celery.utils.log import get_logger
 from celery.utils.time import maybe_make_aware
 from kombu.utils.encoding import safe_repr, safe_str
 from kombu.utils.json import dumps, loads
 
-from .models import (
+from celery_sqlalchemy_scheduler.db.models import (
     CrontabSchedule,
     IntervalSchedule,
     PeriodicTask,
     PeriodicTaskChanged,
     SolarSchedule,
 )
-from .session import SessionManager, session_cleanup
+from celery_sqlalchemy_scheduler.session import SessionManager, session_cleanup
 
 # This scheduler must wake up more frequently than the
 # regular of 5 minutes because it needs to take external
@@ -36,7 +35,7 @@ session_manager = SessionManager()
 # session = session_manager()
 
 
-logger = get_logger("celery_sqlalchemy_scheduler.schedulers")
+logger = logging.getLogger(__name__)
 
 
 class ModelEntry(ScheduleEntry):
