@@ -35,51 +35,6 @@ class ModelMixin:
         return self
 
 
-class IntervalSchedule(Base, ModelMixin):
-    __tablename__ = "celery_interval_schedule"
-
-    DAYS = "days"
-    HOURS = "hours"
-    MINUTES = "minutes"
-    SECONDS = "seconds"
-    MICROSECONDS = "microseconds"
-
-    id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
-    # Number of interval periods to wait before running the task again
-    every = sa.Column(sa.Integer, nullable=False)
-    # The type of period between task runs (Example: days)
-    period = sa.Column(sa.String(24))
-
-    def __repr__(self) -> str:
-        if self.every == 1:
-            return f"every {self.period_singular}"
-        return f"every {self.every} {self.period}"
-
-    @property
-    def schedule(self) -> schedules.schedule:
-        return schedules.schedule(
-            dt.timedelta(**{self.period: self.every}),
-            # nowfun=lambda: make_aware(now())
-            # nowfun=dt.datetime.now
-        )
-
-    @classmethod
-    def from_schedule(
-        cls, session: Session, schedule: schedules.schedule, period: str = SECONDS
-    ) -> "IntervalSchedule":
-        every = max(schedule.run_every.total_seconds(), 0)
-        model = session.query(IntervalSchedule).filter_by(every=every, period=period).first()
-        if not model:
-            model = cls(every=every, period=period)
-            session.add(model)
-            session.commit()
-        return model
-
-    @property
-    def period_singular(self) -> str:
-        return self.period[:-1]
-
-
 class CrontabSchedule(Base, ModelMixin):
     __tablename__ = "celery_crontab_schedule"
 
@@ -90,13 +45,6 @@ class CrontabSchedule(Base, ModelMixin):
     day_of_month = sa.Column(sa.String(31 * 4), default="*")
     month_of_year = sa.Column(sa.String(64), default="*")
     timezone = sa.Column(sa.String(64), default="UTC")
-
-    def __repr__(self) -> str:
-        return (
-            f"{cronexp(self.minute)} {cronexp(self.hour)} "
-            f"{cronexp(self.day_of_week)} {cronexp(self.day_of_month)} "
-            f"{cronexp(self.month_of_year)} (m/h/d/dM/MY) {str(self.timezone)}"
-        )
 
     @property
     def schedule(self) -> TzAwareCrontab:
@@ -126,32 +74,6 @@ class CrontabSchedule(Base, ModelMixin):
             session.add(model)
             session.commit()
         return model
-
-
-class SolarSchedule(Base, ModelMixin):
-    __tablename__ = "celery_solar_schedule"
-
-    id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
-    event = sa.Column(sa.String(24))
-    latitude = sa.Column(sa.Float())
-    longitude = sa.Column(sa.Float())
-
-    @property
-    def schedule(self) -> schedules.solar:
-        return schedules.solar(self.event, self.latitude, self.longitude, nowfun=dt.datetime.now)
-
-    @classmethod
-    def from_schedule(cls, session: Session, schedule: schedules.solar) -> "SolarSchedule":
-        spec = {"event": schedule.event, "latitude": schedule.lat, "longitude": schedule.lon}
-        model = session.query(SolarSchedule).filter_by(**spec).first()
-        if not model:
-            model = cls(**spec)
-            session.add(model)
-            session.commit()
-        return model
-
-    def __repr__(self) -> str:
-        return f"{self.event} ({self.latitude}, {self.longitude})"
 
 
 class PeriodicTaskChanged(Base, ModelMixin):
@@ -212,24 +134,11 @@ class PeriodicTask(Base, ModelMixin):
     # task name
     task = sa.Column(sa.String(255))
 
-    # not use ForeignKey
-    interval_id = sa.Column(sa.Integer)
-    interval = relationship(
-        IntervalSchedule,
-        uselist=False,
-        primaryjoin=foreign(interval_id) == remote(IntervalSchedule.id),
-    )
-
     crontab_id = sa.Column(sa.Integer)
     crontab = relationship(
         CrontabSchedule,
         uselist=False,
         primaryjoin=foreign(crontab_id) == remote(CrontabSchedule.id),
-    )
-
-    solar_id = sa.Column(sa.Integer)
-    solar = relationship(
-        SolarSchedule, uselist=False, primaryjoin=foreign(solar_id) == remote(SolarSchedule.id)
     )
 
     args = sa.Column(sa.Text(), default="[]")
@@ -255,16 +164,6 @@ class PeriodicTask(Base, ModelMixin):
 
     no_changes = False
 
-    def __repr__(self) -> str:
-        fmt = "{self.name}: {{no schedule}}"
-        if self.interval:
-            fmt = "{self.name}: {self.interval}"
-        elif self.crontab:
-            fmt = "{self.name}: {self.crontab}"
-        elif self.solar:
-            fmt = "{self.name}: {self.solar}"
-        return fmt
-
     @property
     def task_name(self) -> str:
         return self.task
@@ -275,24 +174,14 @@ class PeriodicTask(Base, ModelMixin):
 
     @property
     def schedule(self) -> schedules.schedule:
-        if self.interval:
-            return self.interval.schedule
-        elif self.crontab:
+        if self.crontab:
             return self.crontab.schedule
-        elif self.solar:
-            return self.solar.schedule
         raise ValueError(f"{self.name} schedule is None!")
 
 
 listen(PeriodicTask, "after_insert", PeriodicTaskChanged.update_changed)
 listen(PeriodicTask, "after_delete", PeriodicTaskChanged.update_changed)
 listen(PeriodicTask, "after_update", PeriodicTaskChanged.changed)
-listen(IntervalSchedule, "after_insert", PeriodicTaskChanged.update_changed)
-listen(IntervalSchedule, "after_delete", PeriodicTaskChanged.update_changed)
-listen(IntervalSchedule, "after_update", PeriodicTaskChanged.update_changed)
 listen(CrontabSchedule, "after_insert", PeriodicTaskChanged.update_changed)
 listen(CrontabSchedule, "after_delete", PeriodicTaskChanged.update_changed)
 listen(CrontabSchedule, "after_update", PeriodicTaskChanged.update_changed)
-listen(SolarSchedule, "after_insert", PeriodicTaskChanged.update_changed)
-listen(SolarSchedule, "after_delete", PeriodicTaskChanged.update_changed)
-listen(SolarSchedule, "after_update", PeriodicTaskChanged.update_changed)

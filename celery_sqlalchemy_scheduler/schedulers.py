@@ -10,13 +10,7 @@ from celery.utils.time import maybe_make_aware
 from kombu.utils.encoding import safe_repr, safe_str
 from kombu.utils.json import dumps, loads
 
-from celery_sqlalchemy_scheduler.db.models import (
-    CrontabSchedule,
-    IntervalSchedule,
-    PeriodicTask,
-    PeriodicTaskChanged,
-    SolarSchedule,
-)
+from celery_sqlalchemy_scheduler.db.models import CrontabSchedule, PeriodicTask, PeriodicTaskChanged
 from celery_sqlalchemy_scheduler.session import SessionManager, session_cleanup
 
 # This scheduler must wake up more frequently than the
@@ -44,8 +38,6 @@ class ModelEntry(ScheduleEntry):
     model_schedules = (
         # (schedule_type, model_type, model_field)
         (schedules.crontab, CrontabSchedule, "crontab"),
-        (schedules.schedule, IntervalSchedule, "interval"),
-        (schedules.solar, SolarSchedule, "solar"),
     )
     save_fields = ["last_run_at", "total_run_count", "no_changes"]
 
@@ -191,7 +183,7 @@ class ModelEntry(ScheduleEntry):
     @classmethod
     def to_model_schedule(
         cls, session: sqlalchemy.orm.Session, schedule: schedules.schedule
-    ) -> Tuple[IntervalSchedule, str]:
+    ) -> Tuple[CrontabSchedule, str]:
         for schedule_type, model_type, model_field in cls.model_schedules:
             # change to schedule
             schedule = schedules.maybe_schedule(schedule)
