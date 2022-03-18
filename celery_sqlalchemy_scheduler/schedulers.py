@@ -89,7 +89,6 @@ class ModelEntry(ScheduleEntry):
         model.no_changes = True
         self.model.enabled = self.enabled = model.enabled = False
         self.session.add(model)
-        self.session.commit()
 
     def is_due(self) -> bool:
         if not self.model.enabled:
@@ -148,7 +147,6 @@ class ModelEntry(ScheduleEntry):
         for field in fields:
             setattr(obj, field, getattr(self.model, field))
         self.session.add(obj)
-        self.session.commit()
 
     @classmethod
     def to_model_schedule(
@@ -182,15 +180,8 @@ class ModelEntry(ScheduleEntry):
         temp = cls._unpack_fields(session, **entry)
         periodic_task.update(**temp)
         session.add(periodic_task)
-        try:
-            session.commit()
-        except sqlalchemy.exc.IntegrityError as exc:
-            logger.error(exc)
-            session.rollback()
-        except Exception as exc:
-            logger.error(exc)
-            session.rollback()
         res = cls(periodic_task, app=app, session=session)
+
         return res
 
     @classmethod
@@ -265,7 +256,7 @@ class DatabaseScheduler(Scheduler):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize the database scheduler."""
         self.app = kwargs["app"]
-        self.session: sqlalchemy.Session = (kwargs["session"],)
+        self.session: sqlalchemy.Session = kwargs["session"]
         self._dirty: Set[Any] = set()
         Scheduler.__init__(self, *args, **kwargs)
         self._finalize = Finalize(self, self.sync, exitpriority=5)
@@ -298,7 +289,6 @@ class DatabaseScheduler(Scheduler):
         if not changes:
             changes = self.Changes(id=1)
             self.session.add(changes)
-            self.session.commit()
             return False
 
         last, ts = self._last_timestamp, changes.last_update
