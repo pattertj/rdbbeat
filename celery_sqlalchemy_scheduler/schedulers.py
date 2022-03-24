@@ -324,7 +324,7 @@ class DatabaseScheduler(Scheduler):
                     return True
             finally:
                 self._last_timestamp = ts
-        return False
+            return False
 
     def reserve(self, entry: ScheduleEntry) -> ScheduleEntry:
         """override
