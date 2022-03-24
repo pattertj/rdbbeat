@@ -36,12 +36,14 @@ class ModelEntry(ScheduleEntry):
     def __init__(
         self,
         model: schedules.schedule,
-        session: sqlalchemy.orm.Session,
+        session_scope: sqlalchemy.orm.Session,
         app: Celery = None,
+        **kw: Any,
     ) -> None:
         """Initialize the model entry."""
         self.app = app or current_app._get_current_object()
-        self.session = session
+        self.session = kw.get("session")
+        self.session_scope = session_scope
         self.model = model
         self.name = model.name
         self.task = model.task
@@ -88,7 +90,13 @@ class ModelEntry(ScheduleEntry):
     def _disable(self, model: schedules.schedule) -> None:
         model.no_changes = True
         self.model.enabled = self.enabled = model.enabled = False
-        self.session.add(model)
+        if self.session:
+            self.session.add(model)
+            self.session.commit()
+        else:
+            with self.session_scope() as session:
+                session.add(model)
+                session.commit()
 
     def is_due(self) -> bool:
         if not self.model.enabled:
@@ -130,7 +138,7 @@ class ModelEntry(ScheduleEntry):
         self.model.last_run_at = self.app.now()
         self.model.total_run_count += 1
         self.model.no_changes = True
-        return self.__class__(self.model, session=self.session)
+        return self.__class__(self.model, self.session_scope)
 
     next = __next__  # for 2to3
 
@@ -140,13 +148,17 @@ class ModelEntry(ScheduleEntry):
         """
         # Object may not be synchronized, so only
         # change the fields we care about.
-        obj = self.session.query(PeriodicTask).get(self.model.id)
+        with self.session_scope() as session:
+            # Object may not be synchronized, so only
+            # change the fields we care about.
+            obj = session.query(PeriodicTask).get(self.model.id)
 
-        for field in self.save_fields:
-            setattr(obj, field, getattr(self.model, field))
-        for field in fields:
-            setattr(obj, field, getattr(self.model, field))
-        self.session.add(obj)
+            for field in self.save_fields:
+                setattr(obj, field, getattr(self.model, field))
+            for field in fields:
+                setattr(obj, field, getattr(self.model, field))
+            session.add(obj)
+            session.commit()
 
     @classmethod
     def to_model_schedule(
@@ -163,7 +175,7 @@ class ModelEntry(ScheduleEntry):
 
     @classmethod
     def from_entry(
-        cls, name: str, session: sqlalchemy.orm.Session, app: Celery = None, **entry: Dict
+        cls, name: str, session_scope: sqlalchemy.orm.Session, app: Celery = None, **entry: Dict
     ) -> "PeriodicTask":
         """
 
@@ -174,14 +186,22 @@ class ModelEntry(ScheduleEntry):
              'options': {'expires': 43200}}
 
         """
-        periodic_task = session.query(PeriodicTask).filter_by(name=name).first()
-        if not periodic_task:
-            periodic_task = PeriodicTask(name=name)
-        temp = cls._unpack_fields(session, **entry)
-        periodic_task.update(**temp)
-        session.add(periodic_task)
-        res = cls(periodic_task, app=app, session=session)
-
+        with session_scope() as session:
+            periodic_task = session.query(PeriodicTask).filter_by(name=name).first()
+            if not periodic_task:
+                periodic_task = PeriodicTask(name=name)
+            temp = cls._unpack_fields(session, **entry)
+            periodic_task.update(**temp)
+            session.add(periodic_task)
+            try:
+                session.commit()
+            except sqlalchemy.exc.IntegrityError as exc:
+                logger.error(exc)
+                session.rollback()
+            except Exception as exc:
+                logger.error(exc)
+                session.rollback()
+            res = cls(periodic_task, app=app, session_scope=session_scope, session=session)
         return res
 
     @classmethod
@@ -256,7 +276,9 @@ class DatabaseScheduler(Scheduler):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize the database scheduler."""
         self.app = kwargs["app"]
-        self.session: sqlalchemy.Session = kwargs["session"]
+        self.session_scope: sqlalchemy.Session = (
+            kwargs.get("session_scope") or self.app.conf.get("session_scope")
+        )
         self._dirty: Set[Any] = set()
         Scheduler.__init__(self, *args, **kwargs)
         self._finalize = Finalize(self, self.sync, exitpriority=5)
@@ -274,29 +296,34 @@ class DatabaseScheduler(Scheduler):
 
     def all_as_schedule(self) -> Dict:
         logger.debug("DatabaseScheduler: Fetching database schedule")
-        # get all enabled PeriodicTask
-        models = self.session.query(self.Model).filter_by(enabled=True).all()
-        s = {}
-        for model in models:
-            try:
-                s[model.name] = self.Entry(model, app=self.app, session=self.session)
-            except ValueError:
-                pass
-        return s
+        with self.session_scope() as session:
+            # get all enabled PeriodicTask
+            models = session.query(self.Model).filter_by(enabled=True).all()
+            s = {}
+            for model in models:
+                try:
+                    s[model.name] = self.Entry(
+                        model, app=self.app, session_scope=self.session_scope, session=session
+                    )
+                except ValueError:
+                    pass
+            return s
 
     def schedule_changed(self) -> bool:
-        changes = self.session.query(self.Changes).get(1)
-        if not changes:
-            changes = self.Changes(id=1)
-            self.session.add(changes)
-            return False
+        with self.session_scope() as session:
+            changes = session.query(self.Changes).get(1)
+            if not changes:
+                changes = self.Changes(id=1)
+                session.add(changes)
+                session.commit()
+                return False
 
-        last, ts = self._last_timestamp, changes.last_update
-        try:
-            if ts and ts > (last if last else ts):
-                return True
-        finally:
-            self._last_timestamp = ts
+            last, ts = self._last_timestamp, changes.last_update
+            try:
+                if ts and ts > (last if last else ts):
+                    return True
+            finally:
+                self._last_timestamp = ts
         return False
 
     def reserve(self, entry: ScheduleEntry) -> ScheduleEntry:
@@ -341,7 +368,7 @@ class DatabaseScheduler(Scheduler):
             #  'options': {'expires': 43200}}
             try:
                 entry = self.Entry.from_entry(
-                    name, session=self.session, app=self.app, **entry_fields
+                    name, session_scope=self.session_scope, app=self.app, **entry_fields
                 )
                 if entry.model.enabled:
                     s[name] = entry
