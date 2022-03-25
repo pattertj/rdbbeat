@@ -149,8 +149,6 @@ class ModelEntry(ScheduleEntry):
         # Object may not be synchronized, so only
         # change the fields we care about.
         with self.session_scope() as session:
-            # Object may not be synchronized, so only
-            # change the fields we care about.
             obj = session.query(PeriodicTask).get(self.model.id)
 
             for field in self.save_fields:
@@ -202,7 +200,7 @@ class ModelEntry(ScheduleEntry):
                 logger.error(exc)
                 session.rollback()
             res = cls(periodic_task, app=app, session_scope=session_scope, session=session)
-        return res
+            return res
 
     @classmethod
     def _unpack_fields(
