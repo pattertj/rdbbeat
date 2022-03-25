@@ -73,6 +73,7 @@ class CrontabSchedule(Base, ModelMixin):
             model = cls(**spec)
             session.add(model)
             session.commit()
+
         return model
 
 
