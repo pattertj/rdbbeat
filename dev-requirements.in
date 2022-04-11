@@ -13,3 +13,7 @@ mypy
 types-mock
 types-pytz
 sqlalchemy_utils
+
+# testing
+pytest
+coverage

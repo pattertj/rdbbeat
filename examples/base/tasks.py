@@ -133,9 +133,6 @@ beat_max_loop_interval = 10
 
 # configure celery_sqlalchemy_scheduler database uri
 beat_dburi = "sqlite:///schedule.db"
-# beat_dburi = 'mysql+mysqlconnector://root:root@127.0.0.1/celery-schedule'
-
-timezone = "Asia/Shanghai"
 
 # prevent memory leaks
 worker_max_tasks_per_child = 10
@@ -147,7 +144,6 @@ config = {
     # 'beat_scheduler': beat_scheduler
     "beat_max_loop_interval": beat_max_loop_interval,
     "beat_dburi": beat_dburi,
-    "timezone": timezone,
     "worker_max_tasks_per_child": worker_max_tasks_per_child,
 }
 
