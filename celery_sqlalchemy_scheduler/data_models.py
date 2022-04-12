@@ -14,7 +14,7 @@ class Schedule(BaseModel):
         if "*" == v:
             return v
         elif not v.isdigit():
-            raise ValueError(f"{v} is not a valid int")
+            raise ValueError(f"Minute: '{v}' is not a valid int")
         assert int(v) >= 0 and int(v) < 60, "Minute value must range between 0 and 59"
         return v
 
@@ -23,7 +23,7 @@ class Schedule(BaseModel):
         if "*" == v:
             return v
         elif not v.isdigit():
-            raise ValueError(f"{v} is not a valid int")
+            raise ValueError(f"Hour: '{v}' is not a valid int")
         assert int(v) >= 0 and int(v) < 24, "Hour value must range between 0 and 23"
         return v
 
@@ -32,7 +32,7 @@ class Schedule(BaseModel):
         if "*" == v:
             return v
         elif not v.isdigit():
-            raise ValueError(f"{v} is not a valid int")
+            raise ValueError(f"Day of week: '{v}' is not a valid int")
         assert int(v) >= 0 and int(v) < 7, "Day of the week value must range between 0 and 6"
         return v
 
@@ -41,7 +41,7 @@ class Schedule(BaseModel):
         if "*" == v:
             return v
         elif not v.isdigit():
-            raise ValueError(f"{v} is not a valid int")
+            raise ValueError(f"Day of month: '{v}' is not a valid int")
         assert int(v) > 0 and int(v) < 32, "Day of the month value must range between 1 and 31"
         return v
 
@@ -50,8 +50,8 @@ class Schedule(BaseModel):
         if "*" == v:
             return v
         elif not v.isdigit():
-            raise ValueError(f"{v} is not a valid int")
-        assert int(v) > 0 and int(v) < 13, "Mon value must range between 0 and 59"
+            raise ValueError(f"Month: '{v}' is not a valid int")
+        assert int(v) > 0 and int(v) < 13, "Month of year value must range between 0 and 59"
         return v
 
 
