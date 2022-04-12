@@ -17,6 +17,7 @@ def schedule_task(
         day_of_week=scheduled_task.schedule.day_of_week,
         day_of_month=scheduled_task.schedule.day_of_month,
         month_of_year=scheduled_task.schedule.month_of_year,
+        timezone=scheduled_task.schedule.timezone
     )
     task = PeriodicTask(
         crontab=schedule,

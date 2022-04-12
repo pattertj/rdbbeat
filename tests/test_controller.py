@@ -1,3 +1,5 @@
+from typing import Dict
+
 from mock import patch
 
 from celery_sqlalchemy_scheduler.controller import schedule_task
@@ -9,7 +11,7 @@ def test_schedule_task():
     with patch("sqlalchemy.orm.Session") as mock_session:
         # Set up the mock_session
         mock_session.add.return_value = None
-        scheduled_task = {
+        scheduled_task: Dict = {
             "name": "task_1",
             "task": "echo",
             "schedule": {
@@ -18,6 +20,7 @@ def test_schedule_task():
                 "day_of_week": "2",
                 "day_of_month": "23",
                 "month_of_year": "12",
+                "timezone": "UTC",
             },
         }
 
@@ -31,12 +34,12 @@ def test_schedule_task():
                 day_of_week=scheduled_task["schedule"]["day_of_week"],
                 day_of_month=scheduled_task["schedule"]["day_of_month"],
                 month_of_year=scheduled_task["schedule"]["month_of_year"],
+                timezone=scheduled_task["schedule"]["timezone"]
             ),
             name=scheduled_task["name"],
             task=scheduled_task["task"],
         )
 
-        assert type(actual_scheduled_task) == type(expected_scheduled_task)
         assert actual_scheduled_task.name == expected_scheduled_task.name
         assert actual_scheduled_task.task == expected_scheduled_task.task
-        # assert actual_scheduled_task.schedule == expected_scheduled_task.schedule
+        assert actual_scheduled_task.schedule == expected_scheduled_task.schedule

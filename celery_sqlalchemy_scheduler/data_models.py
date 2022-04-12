@@ -7,55 +7,51 @@ class Schedule(BaseModel):
     day_of_week: str = "*"
     day_of_month: str = "*"
     month_of_year: str = "*"
+    timezone: str = "*"
 
     @validator("minute")
-    def minute_validation(cls, v):
+    def minute_validation(cls, v: str) -> str:
         if "*" == v:
             return v
         elif not v.isdigit():
             raise ValueError(f"{v} is not a valid int")
-        if not (int(v) >= 0 and int(v) < 60):
-            raise AssertionError("Minute value must range between 0 and 59")
+        assert int(v) >= 0 and int(v) < 60, "Minute value must range between 0 and 59"
         return v
 
     @validator("hour")
-    def hour_validation(cls, v):
+    def hour_validation(cls, v: str) -> str:
         if "*" == v:
             return v
         elif not v.isdigit():
             raise ValueError(f"{v} is not a valid int")
-        if not (int(v) >= 0 and int(v) < 24):
-            raise AssertionError("Hour value must range between 0 and 23")
+        assert int(v) >= 0 and int(v) < 24, "Hour value must range between 0 and 23"
         return v
 
     @validator("day_of_week")
-    def day_of_week_validation(cls, v):
+    def day_of_week_validation(cls, v: str) -> str:
         if "*" == v:
             return v
         elif not v.isdigit():
             raise ValueError(f"{v} is not a valid int")
-        if not (int(v) >= 0 and int(v) < 7):
-            raise AssertionError("Day of the week value must range between 0 and 6")
+        assert int(v) >= 0 and int(v) < 7, "Day of the week value must range between 0 and 6"
         return v
 
     @validator("day_of_month")
-    def day_of_month_validation(cls, v):
+    def day_of_month_validation(cls, v: str) -> str:
         if "*" == v:
             return v
         elif not v.isdigit():
             raise ValueError(f"{v} is not a valid int")
-        if not (int(v) > 0 and int(v) < 32):
-            raise AssertionError("Day of the month value must range between 1 and 31")
+        assert int(v) > 0 and int(v) < 32, "Day of the month value must range between 1 and 31"
         return v
 
     @validator("month_of_year")
-    def month_of_year_validation(cls, v):
+    def month_of_year_validation(cls, v: str) -> str:
         if "*" == v:
             return v
         elif not v.isdigit():
             raise ValueError(f"{v} is not a valid int")
-        if not (int(v) > 0 and int(v) < 13):
-            raise AssertionError("Mon value must range between 0 and 59")
+        assert int(v) > 0 and int(v) < 13, "Mon value must range between 0 and 59"
         return v
 
 
