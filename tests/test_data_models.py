@@ -23,7 +23,7 @@ def test_schedule_invalid_minute_type():
         "day_of_month": "23",
         "month_of_year": "12",
     }
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="minute is not a valid int"):
         Schedule.parse_obj(schedule)
 
 
@@ -35,7 +35,7 @@ def test_schedule_invalid_minute():
         "day_of_month": "23",
         "month_of_year": "12",
     }
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError, match="Minute value must range between 0 and 59"):
         Schedule.parse_obj(schedule)
 
 
@@ -47,7 +47,7 @@ def test_schedule_invalid_hour_type():
         "day_of_month": "23",
         "month_of_year": "12",
     }
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="h is not a valid int"):
         Schedule.parse_obj(schedule)
 
 
@@ -59,7 +59,7 @@ def test_schedule_invalid_hour():
         "day_of_month": "23",
         "month_of_year": "12",
     }
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError, match="Hour value must range between 0 and 23"):
         Schedule.parse_obj(schedule)
 
 
@@ -71,7 +71,7 @@ def test_schedule_invalid_day_of_week_type():
         "day_of_month": "23",
         "month_of_year": "12",
     }
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="day is not a valid int"):
         Schedule.parse_obj(schedule)
 
 
@@ -83,7 +83,7 @@ def test_schedule_invalid_day_of_week():
         "day_of_month": "23",
         "month_of_year": "12",
     }
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError, match="Day of the week value must range between 0 and 6"):
         Schedule.parse_obj(schedule)
 
 
@@ -95,7 +95,7 @@ def test_schedule_invalid_day_of_month_type():
         "day_of_month": "day",
         "month_of_year": "12",
     }
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="day is not a valid int"):
         Schedule.parse_obj(schedule)
 
 
@@ -107,7 +107,7 @@ def test_schedule_invalid_day_of_month():
         "day_of_month": "32",
         "month_of_year": "12",
     }
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError, match="Day of the month value must range between 1 and 31"):
         Schedule.parse_obj(schedule)
 
 
@@ -119,7 +119,7 @@ def test_schedule_invalid_month_type():
         "day_of_month": "23",
         "month_of_year": "month",
     }
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="month is not a valid int"):
         Schedule.parse_obj(schedule)
 
 
@@ -131,5 +131,5 @@ def test_schedule_invalid_month():
         "day_of_month": "23",
         "month_of_year": "0",
     }
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError, match="Mon value must range between 0 and 59"):
         Schedule.parse_obj(schedule)
