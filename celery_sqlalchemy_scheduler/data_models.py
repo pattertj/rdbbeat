@@ -14,7 +14,8 @@ class Schedule(BaseModel):
             return v
         elif not v.isdigit():
             raise ValueError(f"{v} is not a valid int")
-        assert int(v) >= 0 and int(v) < 60, "Minute value must range between 0 and 59"
+        if not (int(v) >= 0 and int(v) < 60):
+            raise AssertionError("Minute value must range between 0 and 59")
         return v
 
     @validator("hour")
@@ -23,7 +24,8 @@ class Schedule(BaseModel):
             return v
         elif not v.isdigit():
             raise ValueError(f"{v} is not a valid int")
-        assert int(v) >= 0 and int(v) < 24, "Hour value must range between 0 and 23"
+        if not (int(v) >= 0 and int(v) < 24):
+            raise AssertionError("Hour value must range between 0 and 23")
         return v
 
     @validator("day_of_week")
@@ -32,7 +34,8 @@ class Schedule(BaseModel):
             return v
         elif not v.isdigit():
             raise ValueError(f"{v} is not a valid int")
-        assert int(v) >= 0 and int(v) < 7, "Day of the week value must range between 0 and 6"
+        if not (int(v) >= 0 and int(v) < 7):
+            raise AssertionError("Day of the week value must range between 0 and 6")
         return v
 
     @validator("day_of_month")
@@ -41,7 +44,8 @@ class Schedule(BaseModel):
             return v
         elif not v.isdigit():
             raise ValueError(f"{v} is not a valid int")
-        assert int(v) > 0 and int(v) < 32, "Day of the month value must range between 1 and 31"
+        if not (int(v) > 0 and int(v) < 32):
+            raise AssertionError("Day of the month value must range between 1 and 31")
         return v
 
     @validator("month_of_year")
@@ -50,7 +54,8 @@ class Schedule(BaseModel):
             return v
         elif not v.isdigit():
             raise ValueError(f"{v} is not a valid int")
-        assert int(v) > 0 and int(v) < 13, "Mon value must range between 0 and 59"
+        if not (int(v) > 0 and int(v) < 13):
+            raise AssertionError("Mon value must range between 0 and 59")
         return v
 
 

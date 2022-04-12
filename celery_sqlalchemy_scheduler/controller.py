@@ -1,9 +1,7 @@
-from typing import Union
-
 from sqlalchemy.orm import Session
 
-from .db.models import CrontabSchedule, PeriodicTask
 from .data_models import ScheduledTask
+from .db.models import CrontabSchedule, PeriodicTask
 
 
 def schedule_task(
