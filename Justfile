@@ -49,3 +49,7 @@ lint:
 	# black --diff --check .
 	mypy .
 	yamllint .
+
+# Run tests
+test +ARGS='':
+	coverage run -m pytest {{ARGS}}
