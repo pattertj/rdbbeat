@@ -25,7 +25,7 @@ jobs:
       run: just lint
 
     - name: Run Tests
-        run: just test
+      run: just test
 
     # TODO: will uncomment once transitioned from pipfile to requirements.in
     # - name: Check Requirements File Up-To-Date
