@@ -5,7 +5,7 @@ from mock import patch
 from sqlalchemy.orm.exc import NoResultFound
 
 from celery_sqlalchemy_scheduler.controller import (
-    create_task,
+    schedule_task,
     update_period_task,
     update_task_enable_status,
 )
@@ -32,7 +32,7 @@ def test_schedule_task():
             "schedule": schedule,
         }
 
-        create_task(mock_session, ScheduledTask.parse_obj(scheduled_task))
+        schedule_task(mock_session, ScheduledTask.parse_obj(scheduled_task))
 
         actual_scheduled_task = mock_session.add.call_args[0][0]
         expected_scheduled_task = PeriodicTask(

@@ -7,12 +7,12 @@ from .data_models import ScheduledTask
 from .db.models import CrontabSchedule, PeriodicTask
 
 
-def create_task(
+def schedule_task(
     session: Session,
     scheduled_task: ScheduledTask,
 ) -> PeriodicTask:
     """
-    Create a new task
+    Schedule a task by adding a periodic task entry.
     """
 
     schedule = CrontabSchedule(**scheduled_task.schedule.dict())
