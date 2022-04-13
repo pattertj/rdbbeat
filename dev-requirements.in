@@ -17,3 +17,4 @@ sqlalchemy_utils
 # testing
 pytest
 coverage
+mock
