@@ -29,11 +29,6 @@ jobs:
           just test
           just coverage
 
-      - name: Upload Code Coverage Report
-        uses: codecov/codecov-action@v2
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-
     # TODO: will uncomment once transitioned from pipfile to requirements.in
     # - name: Check Requirements File Up-To-Date
     #   run: |
