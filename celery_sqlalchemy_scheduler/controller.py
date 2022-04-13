@@ -7,16 +7,13 @@ from .data_models import ScheduledTask
 from .db.models import CrontabSchedule, PeriodicTask
 
 
-def create_or_update_task(
+def create_task(
     session: Session,
     scheduled_task: ScheduledTask,
-    periodic_task_id: int = None,
 ) -> PeriodicTask:
     """
-    Try to update a task if it exists, otherwise create a new task.
+    Create a new task
     """
-    if periodic_task_id is not None:
-        return _update_period_task(session, periodic_task_id, scheduled_task)
 
     schedule = CrontabSchedule(**scheduled_task.schedule.dict())
     task = PeriodicTask(
@@ -26,19 +23,21 @@ def create_or_update_task(
     )
     session.add(task)
 
+    return task
+
 
 def update_task_enable_status(
     session: Session,
     enable_status: bool,
     periodic_task_id: int,
-) -> None:
+) -> PeriodicTask:
     """
     Update task enable status (if task is enabled or disabled).
     """
     try:
         task = session.query(PeriodicTask).get(periodic_task_id)
         task.enabled = enable_status
-        session.flush()
+        session.add(task)
 
     except NoResultFound as e:
         raise PeriodicTaskNotFound from e
@@ -46,7 +45,7 @@ def update_task_enable_status(
     return task
 
 
-def _update_period_task(
+def update_period_task(
     session: Session,
     scheduled_task: ScheduledTask,
     periodic_task_id: int,
@@ -61,7 +60,7 @@ def _update_period_task(
         task.crontab = schedule
         task.name = (scheduled_task.name,)
         task.task = scheduled_task.task
-        session.flush()
+        session.add(task)
 
     except NoResultFound as e:
         raise PeriodicTaskNotFound from e
