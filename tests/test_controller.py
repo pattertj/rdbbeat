@@ -12,12 +12,12 @@ def test_schedule_task():
         # Set up the mock_session
         mock_session.add.return_value = None
         schedule = {
-                "minute": "23",
-                "hour": "00",
-                "day_of_week": "2",
-                "day_of_month": "23",
-                "month_of_year": "12",
-                "timezone": "UTC",
+            "minute": "23",
+            "hour": "00",
+            "day_of_week": "2",
+            "day_of_month": "23",
+            "month_of_year": "12",
+            "timezone": "UTC",
         }
         scheduled_task: Dict = {
             "name": "task_1",
@@ -35,7 +35,7 @@ def test_schedule_task():
                 day_of_week=schedule["day_of_week"],
                 day_of_month=schedule["day_of_month"],
                 month_of_year=schedule["month_of_year"],
-                timezone=schedule["timezone"]
+                timezone=schedule["timezone"],
             ),
             name=scheduled_task["name"],
             task=scheduled_task["task"],
