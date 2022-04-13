@@ -14,7 +14,6 @@ def schedule_task(
     """
     Schedule a task by adding a periodic task entry.
     """
-
     schedule = CrontabSchedule(**scheduled_task.schedule.dict())
     task = PeriodicTask(
         crontab=schedule,

@@ -84,7 +84,6 @@ def test_update_task_enable_status():
 
 
 def test_update_task_enabled_status_fail():
-
     with patch("sqlalchemy.orm.Session") as mock_session:
         with pytest.raises(PeriodicTaskNotFound):
 
