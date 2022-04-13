@@ -65,3 +65,13 @@ def update_period_task(
         raise PeriodicTaskNotFound from e
 
     return task
+
+
+def delete_task(session: Session, periodic_task_id: int) -> PeriodicTask:
+    try:
+        task = session.query(PeriodicTask).get(periodic_task_id)
+        session.delete(task)
+        return task
+    except NoResultFound:
+        raise NoResultFound()
+       
