@@ -21,6 +21,7 @@ def schedule_task(
     session.add(task)
     return task
 
+
 def delete_task(session: Session, periodic_task_id: int) -> PeriodicTask:
     try:
         task = session.query(PeriodicTask).get(periodic_task_id)

@@ -2,7 +2,7 @@ from typing import Dict
 
 from mock import patch
 
-from celery_sqlalchemy_scheduler.controller import schedule_task, delete_task
+from celery_sqlalchemy_scheduler.controller import delete_task, schedule_task
 from celery_sqlalchemy_scheduler.data_models import ScheduledTask
 from celery_sqlalchemy_scheduler.db.models import CrontabSchedule, PeriodicTask
 
@@ -43,6 +43,7 @@ def test_schedule_task():
         assert actual_scheduled_task.name == expected_scheduled_task.name
         assert actual_scheduled_task.task == expected_scheduled_task.task
         assert actual_scheduled_task.schedule == expected_scheduled_task.schedule
+
 
 def test_delete_task():
     with patch("sqlalchemy.orm.Session") as mock_session:
