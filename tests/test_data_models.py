@@ -131,5 +131,5 @@ def test_schedule_invalid_month():
         "day_of_month": "23",
         "month_of_year": "0",
     }
-    with pytest.raises(ValidationError, match="Month of year value must range between 0 and 59"):
+    with pytest.raises(ValidationError, match="Month of year value must range between 0 and 12"):
         Schedule.parse_obj(schedule)

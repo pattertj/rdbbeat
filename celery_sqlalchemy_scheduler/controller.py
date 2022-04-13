@@ -9,16 +9,9 @@ def schedule_task(
     scheduled_task: ScheduledTask,
 ) -> None:
     """
-    Add
+    Schedule a task by adding a periodic task entry.
     """
-    schedule = CrontabSchedule(
-        minute=scheduled_task.schedule.minute,
-        hour=scheduled_task.schedule.hour,
-        day_of_week=scheduled_task.schedule.day_of_week,
-        day_of_month=scheduled_task.schedule.day_of_month,
-        month_of_year=scheduled_task.schedule.month_of_year,
-        timezone=scheduled_task.schedule.timezone
-    )
+    schedule = CrontabSchedule(**scheduled_task.schedule.dict())
     task = PeriodicTask(
         crontab=schedule,
         name=scheduled_task.name,

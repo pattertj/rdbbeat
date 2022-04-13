@@ -51,7 +51,7 @@ class Schedule(BaseModel):
             return v
         elif not v.isdigit():
             raise ValueError(f"Month: '{v}' is not a valid int")
-        assert int(v) > 0 and int(v) < 13, "Month of year value must range between 0 and 59"
+        assert int(v) > 0 and int(v) < 13, "Month of year value must range between 0 and 12"
         return v
 
 
