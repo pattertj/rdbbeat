@@ -74,4 +74,3 @@ def delete_task(session: Session, periodic_task_id: int) -> PeriodicTask:
         return task
     except NoResultFound:
         raise NoResultFound()
-       
