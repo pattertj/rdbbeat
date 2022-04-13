@@ -58,7 +58,7 @@ def update_period_task(
 
         schedule = CrontabSchedule(**scheduled_task.schedule.dict())
         task.crontab = schedule
-        task.name = (scheduled_task.name,)
+        task.name = scheduled_task.name
         task.task = scheduled_task.task
         session.add(task)
 

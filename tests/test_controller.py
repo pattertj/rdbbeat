@@ -1,14 +1,16 @@
 from typing import Dict
 
-from mock import patch
 import pytest
-
+from mock import patch
 from sqlalchemy.orm.exc import NoResultFound
 
-
-from celery_sqlalchemy_scheduler.controller import create_task, update_period_task, update_task_enable_status
+from celery_sqlalchemy_scheduler.controller import (
+    create_task,
+    update_period_task,
+    update_task_enable_status,
+)
 from celery_sqlalchemy_scheduler.data_models import ScheduledTask
-from celery_sqlalchemy_scheduler.db.models import CrontabSchedule, PeriodicTask, cronexp
+from celery_sqlalchemy_scheduler.db.models import CrontabSchedule, PeriodicTask
 from celery_sqlalchemy_scheduler.exceptions import PeriodicTaskNotFound
 
 
@@ -78,7 +80,7 @@ def test_update_task_enable_status():
 
         updated_task = update_task_enable_status(mock_session, False, periodic_task_id)
 
-        assert updated_task.enabled == False
+        assert updated_task.enabled is False
 
 
 def test_update_task_enabled_status_fail():
@@ -137,6 +139,7 @@ def test_update_periodic_task():
         periodic_task_id = 1
 
         updated_db_task = update_period_task(
-            mock_session, ScheduledTask.parse_obj(scheduled_task), periodic_task_id)
+            mock_session, ScheduledTask.parse_obj(new_scheduled_task), periodic_task_id)
 
-        assert updated_task == updated_db_task
+        assert mock_session.query(PeriodicTask).get.call_count == 1
+        assert updated_task.name == updated_db_task.name
