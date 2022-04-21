@@ -4,15 +4,15 @@ import pytest
 from mock import patch
 from sqlalchemy.orm.exc import NoResultFound
 
-from celery_sqlalchemy_scheduler.controller import (
+from uxi_celery_scheduler.controller import (
     delete_task,
     schedule_task,
     update_period_task,
     update_task_enable_status,
 )
-from celery_sqlalchemy_scheduler.data_models import ScheduledTask
-from celery_sqlalchemy_scheduler.db.models import CrontabSchedule, PeriodicTask
-from celery_sqlalchemy_scheduler.exceptions import PeriodicTaskNotFound
+from uxi_celery_scheduler.data_models import ScheduledTask
+from uxi_celery_scheduler.db.models import CrontabSchedule, PeriodicTask
+from uxi_celery_scheduler.exceptions import PeriodicTaskNotFound
 
 
 def test_schedule_task(scheduled_task_db_object, scheduled_task):
