@@ -38,6 +38,8 @@ markupsafe==2.1.0
     # via mako
 prompt-toolkit==3.0.28
     # via click-repl
+pydantic==1.9.0
+    # via -r requirements.in
 pytz==2021.3
     # via celery
 six==1.16.0
@@ -46,6 +48,8 @@ sqlalchemy==1.4.32
     # via
     #   -r requirements.in
     #   alembic
+typing-extensions==4.2.0
+    # via pydantic
 vine==5.0.0
     # via
     #   amqp
