@@ -49,7 +49,7 @@ celery = Celery('tasks')
 celery.conf.update(
     {'session_scope': session_scope}
 )
-
+```
 
 ## Development
 
@@ -75,8 +75,9 @@ A crontab schedule has the fields: `minute`, `hour`, `day_of_week`,
 `day_of_month` and `month_of_year`, so if you want the equivalent of a
 `30 * * * *` (execute every 30 minutes) crontab entry, you specify:
 
-    >>> from .controller import schedule_task
-    >>> from .data_models import ScheduledTask
+```Python
+    >>> from uxi_celery_scheduler.controller import schedule_task
+    >>> from uxi_celery_scheduler.data_models import ScheduledTask
     >>> scheduled_task = {
     ...             "name": "task_1",
     ...             "task": "echo",
@@ -91,6 +92,7 @@ A crontab schedule has the fields: `minute`, `hour`, `day_of_week`,
     ...         }
     >>> with session_scope() as session:
     ...      task = schedule_task(session, ScheduledTask.parse_obj(scheduled_task))
+```
 
 The crontab schedule is linked to a specific timezone using the
 'timezone' input parameter.
