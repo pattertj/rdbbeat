@@ -274,8 +274,8 @@ class DatabaseScheduler(Scheduler):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize the database scheduler."""
         self.app = kwargs["app"]
-        self.session_scope: sqlalchemy.Session = (
-            kwargs.get("session_scope") or self.app.conf.get("session_scope")
+        self.session_scope: sqlalchemy.Session = kwargs.get("session_scope") or self.app.conf.get(
+            "session_scope"
         )
         self._dirty: Set[Any] = set()
         Scheduler.__init__(self, *args, **kwargs)
