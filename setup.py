@@ -5,7 +5,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="celery_sqlalchemy_scheduler",
+    name="uxi_celery_scheduler",
     python_requires=">=3.8",
     author="Aruba UXI",
     version="0.1.0",
