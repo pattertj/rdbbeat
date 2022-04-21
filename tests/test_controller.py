@@ -7,8 +7,8 @@ from sqlalchemy.orm.exc import NoResultFound
 from uxi_celery_scheduler.controller import (
     delete_task,
     schedule_task,
-    update_period_task,
-    update_task_enable_status,
+    update_task,
+    update_task_enabled_status,
 )
 from uxi_celery_scheduler.data_models import ScheduledTask
 from uxi_celery_scheduler.db.models import CrontabSchedule, PeriodicTask
@@ -28,12 +28,12 @@ def test_schedule_task(scheduled_task_db_object, scheduled_task):
         assert actual_scheduled_task.schedule == expected_scheduled_task.schedule
 
 
-def test_update_task_enable_status(scheduled_task_db_object):
+def test_update_task_enabled_status(scheduled_task_db_object):
     with patch("sqlalchemy.orm.Session") as mock_session:
         mock_session.query(PeriodicTask).get.return_value = scheduled_task_db_object
 
         periodic_task_id = 1
-        updated_task = update_task_enable_status(mock_session, False, periodic_task_id)
+        updated_task = update_task_enabled_status(mock_session, False, periodic_task_id)
 
         assert updated_task.enabled is False
 
@@ -44,10 +44,10 @@ def test_update_task_enabled_status_fail():
             mock_session.query(PeriodicTask).get.side_effect = NoResultFound()
 
             periodic_task_id = -1
-            update_task_enable_status(mock_session, False, periodic_task_id)
+            update_task_enabled_status(mock_session, False, periodic_task_id)
 
 
-def test_update_periodic_task(scheduled_task_db_object):
+def test_update_task(scheduled_task_db_object):
     with patch("sqlalchemy.orm.Session") as mock_session:
         mock_session.query(PeriodicTask).get.return_value = scheduled_task_db_object
 
@@ -73,7 +73,7 @@ def test_update_periodic_task(scheduled_task_db_object):
         )
 
         periodic_task_id = 1
-        actual_updated_db_task = update_period_task(
+        actual_updated_db_task = update_task(
             mock_session, ScheduledTask.parse_obj(new_scheduled_task), periodic_task_id
         )
 

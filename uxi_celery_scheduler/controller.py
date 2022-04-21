@@ -24,26 +24,26 @@ def schedule_task(
     return task
 
 
-def update_task_enable_status(
+def update_task_enabled_status(
     session: Session,
-    enable_status: bool,
+    enabled_status: bool,
     periodic_task_id: int,
 ) -> PeriodicTask:
     """
-    Update task enable status (if task is enabled or disabled).
+    Update task enabled status (if task is enabled or disabled).
     """
     try:
         task = session.query(PeriodicTask).get(periodic_task_id)
-        task.enabled = enable_status
+        task.enabled = enabled_status
         session.add(task)
 
     except NoResultFound as e:
-        raise PeriodicTaskNotFound from e
+        raise PeriodicTaskNotFound() from e
 
     return task
 
 
-def update_period_task(
+def update_task(
     session: Session,
     scheduled_task: ScheduledTask,
     periodic_task_id: int,
@@ -61,7 +61,7 @@ def update_period_task(
         session.add(task)
 
     except NoResultFound as e:
-        raise PeriodicTaskNotFound from e
+        raise PeriodicTaskNotFound() from e
 
     return task
 
@@ -71,5 +71,5 @@ def delete_task(session: Session, periodic_task_id: int) -> PeriodicTask:
         task = session.query(PeriodicTask).get(periodic_task_id)
         session.delete(task)
         return task
-    except NoResultFound:
-        raise NoResultFound()
+    except NoResultFound as e:
+        raise PeriodicTaskNotFound() from e
