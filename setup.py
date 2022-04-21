@@ -8,7 +8,7 @@ setup(
     name="uxi-celery-scheduler",
     python_requires=">=3.8",
     author="Aruba UXI",
-    version="1.2.1",
+    version="1.2.2",
     description="A Scheduler Based SQLalchemy For Celery",
     classifiers=[
         "Intended Audience :: Developers",
@@ -20,5 +20,5 @@ setup(
     packages=find_packages(exclude=["contrib", "docs", "tests"]),
     include_package_data=True,
     zip_safe=False,
-    install_requires=["celery>=4.2", "sqlalchemy"],
+    install_requires=["celery~=5.2.3", "sqlalchemy", "alembic", "pydantic"],
 )
