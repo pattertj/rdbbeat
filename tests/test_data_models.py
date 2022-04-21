@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from celery_sqlalchemy_scheduler.data_models import Schedule
+from uxi_celery_scheduler.data_models import Schedule
 
 
 def test_schedule_pass():

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
-from celery_sqlalchemy_scheduler.data_models import ScheduledTask
-from celery_sqlalchemy_scheduler.db.models import CrontabSchedule, PeriodicTask
+from uxi_celery_scheduler.data_models import ScheduledTask
+from uxi_celery_scheduler.db.models import CrontabSchedule, PeriodicTask
 
 
 def schedule_task(

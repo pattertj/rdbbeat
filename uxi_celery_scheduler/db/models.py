@@ -12,7 +12,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, class_mapper, foreign, relationship, remote
 from sqlalchemy.sql import insert, select, update
 
-from celery_sqlalchemy_scheduler.tzcrontab import TzAwareCrontab
+from uxi_celery_scheduler.tzcrontab import TzAwareCrontab
 
 logger = logging.getLogger(__name__)
 

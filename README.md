@@ -67,7 +67,7 @@ Both the worker and beat services need to be running at the same time.
 2.  As a separate process, start the beat service (specify the
     scheduler):
 
-        $ celery -A [project-name] beat -l info --scheduler celery_sqlalchemy_scheduler.schedulers:DatabaseScheduler
+        $ celery -A [project-name] beat -l info --scheduler uxi_celery_scheduler.schedulers:DatabaseScheduler
 
 ### Example creating crontab-based periodic task
 
