@@ -1,8 +1,8 @@
 from mock import patch
 
-from celery_sqlalchemy_scheduler.controller import delete_task, schedule_task
-from celery_sqlalchemy_scheduler.data_models import ScheduledTask
-from celery_sqlalchemy_scheduler.db.models import CrontabSchedule, PeriodicTask
+from uxi_celery_scheduler.controller import delete_task, schedule_task
+from uxi_celery_scheduler.data_models import ScheduledTask
+from uxi_celery_scheduler.db.models import CrontabSchedule, PeriodicTask
 
 
 def test_schedule_task(scheduled_task):

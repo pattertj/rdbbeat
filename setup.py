@@ -5,10 +5,10 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="celery_sqlalchemy_scheduler",
+    name="uxi-celery-scheduler",
     python_requires=">=3.8",
     author="Aruba UXI",
-    version="0.2.0",
+    version="1.2.0",
     description="A Scheduler Based SQLalchemy For Celery",
     classifiers=[
         "Intended Audience :: Developers",

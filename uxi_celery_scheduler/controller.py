@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import NoResultFound
 
-from .data_models import ScheduledTask
-from .db.models import CrontabSchedule, PeriodicTask
+from uxi_celery_scheduler.data_models import ScheduledTask
+from uxi_celery_scheduler.db.models import CrontabSchedule, PeriodicTask
 
 
 def schedule_task(
