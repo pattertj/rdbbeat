@@ -1,6 +1,6 @@
 import pytest
 
-from celery_sqlalchemy_scheduler.db.models import CrontabSchedule, PeriodicTask
+from uxi_celery_scheduler.db.models import CrontabSchedule, PeriodicTask
 
 
 @pytest.fixture
