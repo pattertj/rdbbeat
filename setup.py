@@ -8,7 +8,7 @@ setup(
     name="uxi-celery-scheduler",
     python_requires=">=3.8",
     author="Aruba UXI",
-    version="1.0.0",
+    version="1.1.0",
     description="A Scheduler Based SQLalchemy For Celery",
     classifiers=[
         "Intended Audience :: Developers",
