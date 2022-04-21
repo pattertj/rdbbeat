@@ -1,42 +1,19 @@
-from typing import Dict
-
 from mock import patch
 
-from uxi_celery_scheduler.controller import schedule_task
+from uxi_celery_scheduler.controller import delete_task, schedule_task
 from uxi_celery_scheduler.data_models import ScheduledTask
 from uxi_celery_scheduler.db.models import CrontabSchedule, PeriodicTask
 
 
-def test_schedule_task():
+def test_schedule_task(scheduled_task):
     with patch("sqlalchemy.orm.Session") as mock_session:
         # Set up the mock_session
         mock_session.add.return_value = None
-        schedule = {
-            "minute": "23",
-            "hour": "00",
-            "day_of_week": "2",
-            "day_of_month": "23",
-            "month_of_year": "12",
-            "timezone": "UTC",
-        }
-        scheduled_task: Dict = {
-            "name": "task_1",
-            "task": "echo",
-            "schedule": schedule,
-        }
 
-        schedule_task(mock_session, ScheduledTask.parse_obj(scheduled_task))
+        actual_scheduled_task = schedule_task(mock_session, ScheduledTask.parse_obj(scheduled_task))
 
-        actual_scheduled_task = mock_session.add.call_args[0][0]
         expected_scheduled_task = PeriodicTask(
-            crontab=CrontabSchedule(
-                minute=schedule["minute"],
-                hour=schedule["hour"],
-                day_of_week=schedule["day_of_week"],
-                day_of_month=schedule["day_of_month"],
-                month_of_year=schedule["month_of_year"],
-                timezone=schedule["timezone"],
-            ),
+            crontab=CrontabSchedule(**scheduled_task["schedule"]),
             name=scheduled_task["name"],
             task=scheduled_task["task"],
         )
@@ -44,3 +21,27 @@ def test_schedule_task():
         assert actual_scheduled_task.name == expected_scheduled_task.name
         assert actual_scheduled_task.task == expected_scheduled_task.task
         assert actual_scheduled_task.schedule == expected_scheduled_task.schedule
+
+
+def test_delete_task(scheduled_task):
+    with patch("sqlalchemy.orm.Session") as mock_session:
+        # Set up the mock_session
+        periodic_task_id = 1
+        mock_session.query(PeriodicTask).get.return_value = PeriodicTask(
+            crontab=CrontabSchedule(**scheduled_task["schedule"]),
+            name=scheduled_task["name"],
+            task=scheduled_task["task"],
+        )
+        mock_session.delete.return_value = None
+        # Delete task
+        actual_deleted_task = delete_task(mock_session, periodic_task_id)
+
+        expected_deleted_task = PeriodicTask(
+            crontab=CrontabSchedule(**scheduled_task["schedule"]),
+            name=scheduled_task["name"],
+            task=scheduled_task["task"],
+        )
+
+        assert actual_deleted_task.name == expected_deleted_task.name
+        assert actual_deleted_task.task == expected_deleted_task.task
+        assert actual_deleted_task.schedule == expected_deleted_task.schedule
