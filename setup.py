@@ -20,5 +20,5 @@ setup(
     packages=find_packages(exclude=["contrib", "docs", "tests"]),
     include_package_data=True,
     zip_safe=False,
-    install_requires=["celery~=5.2.3", "sqlalchemy", "alembic", "pydantic"],
+    install_requires=["celery==5.2.3", "sqlalchemy", "alembic", "pydantic"],
 )
