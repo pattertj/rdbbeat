@@ -25,11 +25,12 @@ jobs:
       run: just lint
 
     - name: Run Tests
-      run: just test
+        run: |
+          just test
+          just coverage
 
-    # TODO: will uncomment once transitioned from pipfile to requirements.in
-    # - name: Check Requirements File Up-To-Date
-    #   run: |
-    #     just requirements
-    #     git diff --exit-code -- requirements.txt
+    - name: Check Requirements File Up-To-Date
+      run: |
+        just requirements
+        git diff --exit-code -- requirements.txt
     

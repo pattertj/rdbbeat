@@ -49,3 +49,8 @@ lint:
 # Run tests
 test +ARGS='':
 	coverage run -m pytest {{ARGS}}
+
+# Create coverage report
+coverage:
+	coverage xml
+	coverage report

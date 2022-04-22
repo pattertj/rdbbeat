@@ -1,5 +1,7 @@
 import pytest
 
+from uxi_celery_scheduler.db.models import CrontabSchedule, PeriodicTask
+
 
 @pytest.fixture
 def scheduled_task():
@@ -16,4 +18,16 @@ def scheduled_task():
         "task": "echo",
         "schedule": schedule,
     }
+
     return scheduled_task
+
+
+@pytest.fixture
+def scheduled_task_db_object(scheduled_task):
+    task = PeriodicTask(
+        crontab=CrontabSchedule(**scheduled_task["schedule"]),
+        name=scheduled_task["name"],
+        task=scheduled_task["task"],
+    )
+
+    return task
