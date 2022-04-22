@@ -9,7 +9,7 @@ setup(
     python_requires=">=3.8",
     author="Aruba UXI",
     version="1.3.0",
-    description="A Scheduler Based SQLalchemy For Celery",
+    description="A SQLalchemy-based Scheduler For Celery Beat",
     classifiers=[
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
