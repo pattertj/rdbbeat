@@ -5,7 +5,7 @@ from typing import Any, Dict, Union
 import pytz
 import sqlalchemy as sa
 from celery import schedules
-from sqlalchemy import MetaData, func
+from sqlalchemy import func
 from sqlalchemy.engine import Engine
 from sqlalchemy.event import listen
 from sqlalchemy.ext.declarative import declarative_base
@@ -16,7 +16,7 @@ from uxi_celery_scheduler.tzcrontab import TzAwareCrontab
 
 logger = logging.getLogger(__name__)
 
-Base: Any = declarative_base(metadata=MetaData(schema="scheduler"))
+Base: Any = declarative_base()
 
 
 def cronexp(field: str) -> str:
@@ -37,6 +37,7 @@ class ModelMixin:
 
 class CrontabSchedule(Base, ModelMixin):
     __tablename__ = "celery_crontab_schedule"
+    __table_args__ = ({"schema": "scheduler"})
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     minute = sa.Column(sa.String(60 * 4), default="*")
@@ -81,6 +82,7 @@ class PeriodicTaskChanged(Base, ModelMixin):
     """Helper table for tracking updates to periodic tasks."""
 
     __tablename__ = "celery_periodic_task_changed"
+    __table_args__ = ({"schema": "scheduler"})
 
     id = sa.Column(sa.Integer, primary_key=True)
     last_update = sa.Column(sa.DateTime(timezone=True), nullable=False, default=dt.datetime.now)
@@ -128,6 +130,7 @@ class PeriodicTaskChanged(Base, ModelMixin):
 
 class PeriodicTask(Base, ModelMixin):
     __tablename__ = "celery_periodic_task"
+    __table_args__ = ({"schema": "scheduler"})
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     # name
