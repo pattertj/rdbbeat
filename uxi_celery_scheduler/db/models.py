@@ -37,7 +37,7 @@ class ModelMixin:
 
 class CrontabSchedule(Base, ModelMixin):
     __tablename__ = "celery_crontab_schedule"
-    __table_args__ = ({"schema": "scheduler"})
+    __table_args__ = {"schema": "scheduler"}
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     minute = sa.Column(sa.String(60 * 4), default="*")
@@ -82,7 +82,7 @@ class PeriodicTaskChanged(Base, ModelMixin):
     """Helper table for tracking updates to periodic tasks."""
 
     __tablename__ = "celery_periodic_task_changed"
-    __table_args__ = ({"schema": "scheduler"})
+    __table_args__ = {"schema": "scheduler"}
 
     id = sa.Column(sa.Integer, primary_key=True)
     last_update = sa.Column(sa.DateTime(timezone=True), nullable=False, default=dt.datetime.now)
@@ -130,7 +130,7 @@ class PeriodicTaskChanged(Base, ModelMixin):
 
 class PeriodicTask(Base, ModelMixin):
     __tablename__ = "celery_periodic_task"
-    __table_args__ = ({"schema": "scheduler"})
+    __table_args__ = {"schema": "scheduler"}
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     # name
