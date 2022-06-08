@@ -7,7 +7,7 @@ class Schedule(BaseModel):
     day_of_week: str = "*"
     day_of_month: str = "*"
     month_of_year: str = "*"
-    timezone: str = "*"
+    timezone: str = "UTC"
 
     @validator("minute")
     def minute_validation(cls, v: str) -> str:
