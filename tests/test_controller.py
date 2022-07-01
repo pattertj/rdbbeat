@@ -28,6 +28,20 @@ def test_schedule_task(scheduled_task_db_object, scheduled_task):
         assert actual_scheduled_task.schedule == expected_scheduled_task.schedule
 
 
+def test_schedule_task_kwargs(scheduled_task_db_object, scheduled_task):
+    with patch("sqlalchemy.orm.Session") as mock_session:
+        mock_session.add.return_value = None
+
+        actual_scheduled_task = schedule_task(mock_session, ScheduledTask.parse_obj(scheduled_task), kwaargs={"report_metadata_uid": "some_uid"})
+
+        expected_scheduled_task = scheduled_task_db_object
+
+        assert actual_scheduled_task.name == expected_scheduled_task.name
+        assert actual_scheduled_task.task == expected_scheduled_task.task
+        assert actual_scheduled_task.schedule == expected_scheduled_task.schedule
+        assert actual_scheduled_task.kwargs == {"report_metadata_uid": "some_uid"}
+
+
 def test_update_task_enabled_status(scheduled_task_db_object):
     with patch("sqlalchemy.orm.Session") as mock_session:
         mock_session.query(PeriodicTask).get.return_value = scheduled_task_db_object
