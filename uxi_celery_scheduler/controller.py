@@ -9,7 +9,7 @@ from uxi_celery_scheduler.exceptions import PeriodicTaskNotFound
 def schedule_task(
     session: Session,
     scheduled_task: ScheduledTask,
-    **kwaargs,
+    **kwargs,
 ) -> PeriodicTask:
     """
     Schedule a task by adding a periodic task entry.
@@ -19,7 +19,7 @@ def schedule_task(
         crontab=schedule,
         name=scheduled_task.name,
         task=scheduled_task.task,
-        kwargs=kwaargs.get("kwaargs"),
+        kwargs=str(kwargs),
     )
     session.add(task)
 
